@@ -1,0 +1,85 @@
+smbh.html
+  4faac8b70276592a 171
+i-only-said.html
+  4faac8b70276592a 1-53
+sometimes.html
+  4faac8b70276592a 1-53
+sometimes.js
+  4faac8b70276592a 1-286
+tau.html
+  4faac8b70276592a 83
+to-here-knows-when.html
+  4faac8b70276592a 1-53
+aevum.html
+  4faac8b70276592a 171
+when-you-sleep.js
+  4faac8b70276592a 1-258
+phi.html
+  4faac8b70276592a 67
+blown-a-wish.js
+  4faac8b70276592a 1-282
+spore.html
+  4faac8b70276592a 171
+euler.html
+  4faac8b70276592a 67
+feigenbaum.js
+  4faac8b70276592a 317-323,338
+lotus.html
+  4faac8b70276592a 171
+pi.html
+  4faac8b70276592a 172
+only-shallow.html
+  4faac8b70276592a 1-53
+pi.js
+  4faac8b70276592a 553-557,559-560,576
+index.html
+  4faac8b70276592a 124,129-157
+tau.js
+  4faac8b70276592a 361-367,382
+lattice.html
+  4faac8b70276592a 171
+filament.html
+  4faac8b70276592a 171
+to-here-knows-when.js
+  4faac8b70276592a 1-266
+blown-a-wish.html
+  4faac8b70276592a 1-53
+when-you-sleep.html
+  4faac8b70276592a 1-53
+info-box.js
+  4faac8b70276592a 1-67
+only-shallow.js
+  4faac8b70276592a 1-264
+mathematical-pony.html
+  4faac8b70276592a 1-72
+euler.js
+  4faac8b70276592a 309-315,330
+i-only-said.js
+  4faac8b70276592a 1-269
+mathematical-pony.js
+  4faac8b70276592a 1-357
+feigenbaum.html
+  4faac8b70276592a 67
+phi.js
+  4faac8b70276592a 298-304,319
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "02b071a1fec5ba2cef46ccc0163cd494560475e7",
+  "prompts": {
+    "4faac8b70276592a": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "3f7f2014-cfa1-4439-9297-d406eb8d11ba",
+        "model": "unknown"
+      },
+      "human_author": "Mikey Dorje <mikeydorje@gmail.com>",
+      "messages": [],
+      "total_additions": 7229,
+      "total_deletions": 44,
+      "accepted_lines": 2522,
+      "overriden_lines": 0
+    }
+  }
+}
