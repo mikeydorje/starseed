@@ -306,8 +306,13 @@ function animate() {
   const TP=Math.PI*2;
   for(const k in driftCycles){const{period,depth}=driftCycles[k];const sd=depth*(0.3+bakedFlux*1.4);const d=(Math.sin(elapsed*TP/period)*0.65+Math.sin(elapsed*TP/(period*2.17)+1.3)*0.35)*sd;uniforms[uMap[k]].value=Math.max(0.01,seedCenter[k]*(arc[k]||1)*(1+d));}
   if(analyser&&dataArray){analyser.getByteFrequencyData(dataArray);for(let i=0;i<64;i++)frequencyUniform[i]=dataArray[i];}
-  particles.rotation.y=elapsed*rotSpeedY*(arc.rot||1);
-  particles.rotation.x=elapsed*rotSpeedX*0.35*(arc.rot||1);
+  const driftAmt=0.08*(0.4+bakedFlux*0.8);
+  particles.position.x=Math.sin(elapsed*TP/(DRIFT_BASE*1.4))*driftAmt;
+  particles.position.y=Math.sin(elapsed*TP/(DRIFT_BASE*1.0)+1.7)*driftAmt*0.7;
+  const breathe=1.0+Math.sin(elapsed*TP/(DRIFT_BASE*1.8))*0.05*(arc.rot||1);
+  particles.scale.setScalar(breathe);
+  particles.rotation.y=elapsed*rotSpeedY*(arc.rot||1)*0.2;
+  particles.rotation.x=elapsed*rotSpeedX*0.35*(arc.rot||1)*0.2;
   renderer.render(scene,camera);
 }
 
@@ -322,7 +327,7 @@ window.SCENE = {
   get bakedDriftScale() { return bakedFlux; },
   driftCycles, DRIFT_BASE,
   uniformMap: uMap,
-  rotXMult: 0.35, rotDriftScale: 0, tiltDriftScale: 0,
+  rotXMult: 0.07, rotDriftScale: 0, tiltDriftScale: 0,
   storyArc,
   get currentBuffer() { return currentBuffer; },
   get audioDuration() { return audioDuration; },

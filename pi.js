@@ -550,9 +550,14 @@ function animate() {
   const rotDrift = Math.sin(elapsed * TWO_PI / (DRIFT_BASE * 0.92)) * 0.04;
   const tiltDrift = Math.sin(elapsed * TWO_PI / (DRIFT_BASE * 1.38) + 2.0) * 0.02;
 
-  // Slow, deliberate rotation — let the morphing be the star
-  particles.rotation.y = elapsed * rotSpeedY * (arcMult.rot || 1) * (1.0 + rotDrift);
-  particles.rotation.x = elapsed * rotSpeedX * 0.4 * (arcMult.rot || 1) * (1.0 + tiltDrift);
+  const driftAmt = 0.08 * (0.4 + bakedFlux * 0.8);
+  particles.position.x = Math.sin(elapsed * TWO_PI / (DRIFT_BASE * 1.4)) * driftAmt;
+  particles.position.y = Math.sin(elapsed * TWO_PI / (DRIFT_BASE * 1.0) + 1.7) * driftAmt * 0.7;
+  const breathe = 1.0 + Math.sin(elapsed * TWO_PI / (DRIFT_BASE * 1.8)) * 0.05 * (arcMult.rot || 1);
+  particles.scale.setScalar(breathe);
+
+  particles.rotation.y = elapsed * rotSpeedY * (arcMult.rot || 1) * (1.0 + rotDrift) * 0.2;
+  particles.rotation.x = elapsed * rotSpeedX * 0.4 * (arcMult.rot || 1) * (1.0 + tiltDrift) * 0.2;
 
   renderer.render(scene, camera);
 }
@@ -568,7 +573,7 @@ window.SCENE = {
   get bakedDriftScale() { return bakedFlux; },
   driftCycles, DRIFT_BASE,
   uniformMap,
-  rotXMult: 0.4, rotDriftScale: 0.04, tiltDriftScale: 0.02,
+  rotXMult: 0.08, rotDriftScale: 0.04, tiltDriftScale: 0.02,
   storyArc,
   get currentBuffer() { return currentBuffer; },
   get audioDuration() { return audioDuration; },
