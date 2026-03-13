@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scenes</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #050508;
+      color: #ccc;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    h1 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      color: #444;
+      margin-bottom: 48px;
+    }
+    .scenes {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .scene-card {
+      width: 220px;
+      padding: 32px 24px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s;
+    }
+    .scene-card:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.12);
+      transform: translateY(-4px);
+    }
+    .scene-card .icon {
+      font-size: 36px;
+      margin-bottom: 16px;
+      display: block;
+    }
+    .scene-card .name {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .scene-card .desc {
+      font-size: 11px;
+      color: #555;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <h1>select scene</h1>
+  <div class="scenes">
+    <a href="smbh.html" class="scene-card">
+      <span class="icon">◉</span>
+      <div class="name">Binary SMBH</div>
+      <div class="desc">Galactic jets &amp; accretion disc. Bilateral eruption from a particle singularity.</div>
+    </a>
+    <a href="lotus.html" class="scene-card">
+      <span class="icon">✾</span>
+      <div class="name">Lotus</div>
+      <div class="desc">Layered petals unfurling from stillness. Organic bloom on the surface of dark water.</div>
+    </a>
+    <a href="aevum.html" class="scene-card">
+      <span class="icon">⛰</span>
+      <div class="name">Aevum</div>
+      <div class="desc">Geological strata warped by sound. Time layers crack, rise, and glow like memory in stone.</div>
+    </a>
+    <a href="filament.html" class="scene-card">
+      <span class="icon">⟋</span>
+      <div class="name">Filament</div>
+      <div class="desc">Sharp strands of a cosmic web. No center — crisp threads weave and pulse through the void.</div>
+    </a>
+    <a href="spore.html" class="scene-card">
+      <span class="icon">❋</span>
+      <div class="name">Spore</div>
+      <div class="desc">Scattered seed clusters adrift. Sharp organic points dispersing through space in quiet relation.</div>
+    </a>
+    <a href="lattice.html" class="scene-card">
+      <span class="icon">⬡</span>
+      <div class="name">Lattice</div>
+      <div class="desc">Crystalline grid vibrating with sound. Nodes and bonds resonate in decentralized harmony.</div>
+    </a>
+    <a href="pi.html" class="scene-card">
+      <span class="icon">π</span>
+      <div class="name">Pi</div>
+      <div class="desc">Mathematical morphing. Polygons converge to circles, rose curves bloom, Fourier series ripple — π made visible.</div>
+    </a>
+    <a href="tau.html" class="scene-card">
+      <span class="icon">τ</span>
+      <div class="name">Tau</div>
+      <div class="desc">Full-turn spirographs. Epicycloids and hypotrochoids morph from silence circles — τ traces every winding.</div>
+    </a>
+    <a href="phi.html" class="scene-card">
+      <span class="icon">φ</span>
+      <div class="name">Phi</div>
+      <div class="desc">Golden ratio phyllotaxis. Detuning the golden angle reveals spiral arms — nature's perfect packing made visible.</div>
+    </a>
+    <a href="euler.html" class="scene-card">
+      <span class="icon">e</span>
+      <div class="name">Euler</div>
+      <div class="desc">Exponential growth and decay. Equiangular spirals, Gaussian bells, and catenary arcs — e shapes them all.</div>
+    </a>
+    <a href="feigenbaum.html" class="scene-card">
+      <span class="icon">δ</span>
+      <div class="name">Feigenbaum</div>
+      <div class="desc">Bifurcation cascade. The logistic map iterated live — audio drives from stability through period-doubling into chaos.</div>
+    </a>
+    <a href="hausdorff.html" class="scene-card">
+      <span class="icon">♪</span>
+      <div class="name">Mathematical Pony</div>
+      <div class="desc">Lissajous harmonograph. Layered pendulum harmonics warp rings into stars, knots, and wild precessing figures. Mathematical!</div>
+    </a>
+  </div>
+</body>
+</html>

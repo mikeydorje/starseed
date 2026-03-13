@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>e</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}body{overflow:hidden;background:#080404}canvas{display:block}
+    #controls{position:fixed;top:20px;left:20px;z-index:10;font-family:'Segoe UI',sans-serif;color:#ccc;background:rgba(14,6,4,0.82);backdrop-filter:blur(10px);padding:20px 24px;border-radius:14px;border:1px solid rgba(255,255,255,0.06);width:260px;transition:opacity 0.4s}
+    #controls h2{font-size:15px;letter-spacing:3px;color:#905030;margin-bottom:16px;font-weight:400;font-style:italic}
+    .param{margin-bottom:14px}.param label{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;margin-bottom:5px}.param label span.name{color:#c06040;font-weight:600}.param label span.val{color:#555;font-size:11px;font-variant-numeric:tabular-nums}
+    .param input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;background:rgba(255,255,255,0.06);outline:none}.param input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;background:#a04030;cursor:pointer;box-shadow:0 0 6px rgba(160,64,48,0.4)}
+    #file-input{display:none}.upload-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:18px;width:100%;padding:12px 0;font-family:inherit;font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#d08060;background:linear-gradient(135deg,rgba(160,64,48,0.25),rgba(128,48,32,0.12));border:1px solid rgba(160,64,48,0.3);border-radius:10px;cursor:pointer;transition:all 0.3s ease}.upload-btn:hover{background:linear-gradient(135deg,rgba(160,64,48,0.4),rgba(128,48,32,0.25));border-color:rgba(160,64,48,0.55);box-shadow:0 0 16px rgba(160,64,48,0.2);color:#fff}.upload-btn svg{width:16px;height:16px}
+    .param .desc{font-size:10px;color:#555;margin-bottom:4px;line-height:1.3;font-style:italic}
+    #controls.hidden{opacity:0;pointer-events:none;transform:translateX(-20px);transition:opacity 0.8s ease,transform 0.8s ease}
+    #fs-btn{position:fixed;bottom:16px;right:16px;z-index:20;width:36px;height:36px;padding:0;background:rgba(14,6,4,0.5);border:1px solid rgba(255,255,255,0.08);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.35);transition:all 0.3s ease;backdrop-filter:blur(6px)}#fs-btn:hover{color:#fff;background:rgba(160,64,48,0.3);border-color:rgba(160,64,48,0.4)}#fs-btn svg{width:18px;height:18px}
+    #audio-ready{text-align:center}.audio-filename{display:block;color:rgba(255,255,255,0.5);font-size:11px;margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;margin-left:auto;margin-right:auto}.play-btn{background:rgba(80,200,80,0.25);color:rgba(80,200,80,0.9);border:1px solid rgba(80,200,80,0.3);padding:8px 20px;border-radius:20px;cursor:pointer;font-family:inherit;font-size:13px;transition:all 0.3s}.play-btn:hover{background:rgba(80,200,80,0.4)}.replace-btn{background:none;border:none;color:rgba(255,255,255,0.35);cursor:pointer;font-family:inherit;font-size:11px;display:block;margin:8px auto 0;transition:color 0.3s}.replace-btn:hover{color:rgba(255,255,255,0.7)}
+    #back-btn{position:fixed;top:16px;right:16px;z-index:20;padding:6px 14px;background:rgba(10,10,20,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:8px;cursor:pointer;color:rgba(255,255,255,0.4);font-family:inherit;font-size:11px;letter-spacing:1px;text-transform:uppercase;text-decoration:none;transition:all 0.3s;backdrop-filter:blur(6px)}#back-btn:hover{color:#fff;background:rgba(255,255,255,0.12)}
+    #controls.visible{opacity:1!important;pointer-events:auto!important;transform:translateX(0)!important}
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <h2>e</h2>
+    <div class="param"><label><span class="name">⤴ Growth</span><span class="val" id="p1-val">50</span></label><div class="desc">Equiangular spiral tightness — the defining curve of e</div><input type="range" id="p1" min="0" max="100" value="50" /></div>
+    <div class="param"><label><span class="name">⤵ Decay</span><span class="val" id="p2-val">50</span></label><div class="desc">Gaussian sigma — e shapes the bell curve of probability</div><input type="range" id="p2" min="0" max="100" value="50" /></div>
+    <div class="param"><label><span class="name">∞ Compound</span><span class="val" id="p3-val">50</span></label><div class="desc">Catenary parameter — the hanging chain where e meets gravity</div><input type="range" id="p3" min="0" max="100" value="50" /></div>
+    <div class="param"><label><span class="name">㏑ Natural</span><span class="val" id="p4-val">50</span></label><div class="desc">Logarithmic spreading — the inverse of exponential growth</div><input type="range" id="p4" min="0" max="100" value="50" /></div>
+    <div class="param"><label><span class="name">◈ Spectrum</span><span class="val" id="p5-val">50</span></label><div class="desc">Color phase — shifted by e itself, irrational and endless</div><input type="range" id="p5" min="0" max="100" value="50" /></div>
+    <div class="param"><label><span class="name">⧗ Epoch</span><span class="val" id="p6-val">55</span></label><div class="desc">Narrative arc — from zero through exponential peak to decay</div><input type="range" id="p6" min="0" max="100" value="55" /></div>
+    <div class="param"><label><span class="name">⊘ Threshold</span><span class="val" id="p7-val">50</span></label><div class="desc">Silence gate — below this, circles hold their breath</div><input type="range" id="p7" min="0" max="100" value="50" /></div>
+    <div class="param"><label><span class="name">↭ Flux</span><span class="val" id="p8-val">45</span></label><div class="desc">Slow parameter drift — wandering through e-space</div><input type="range" id="p8" min="0" max="100" value="45" /></div>
+    <input type="file" id="file-input" accept="audio/*" />
+    <div id="upload-area"><label class="upload-btn" for="file-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload Audio</label></div>
+    <div id="audio-ready" style="display:none"><span id="audio-name" class="audio-filename"></span><button id="play-btn" class="play-btn">▶ Play</button><button id="replace-btn" class="replace-btn">Replace Audio</button></div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="audio-store.js"></script>
+  <script src="euler.js"></script>
+  <script src="recorder.js"></script>
+  <a id="back-btn" href="index.html">← Scenes</a>
+  <button id="fs-btn" title="Toggle fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
+  <script>const fsBtn=document.getElementById('fs-btn');fsBtn.addEventListener('click',()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();});document.addEventListener('fullscreenchange',()=>{fsBtn.innerHTML=document.fullscreenElement?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 14h3a2 2 0 0 1 2 2v3m4-5h3a2 2 0 0 0 2-2V9M9 3v3a2 2 0 0 1-2 2H4m11 0h3a2 2 0 0 1 2 2v3"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';});</script>
+</body>
+</html>
