@@ -546,6 +546,7 @@ const Recorder = (() => {
         position:fixed !important; top:50% !important; left:50% !important;
         transform:translate(-50%,-50%) !important;
         box-shadow:0 0 0 1px rgba(255,255,255,0.12);
+        object-fit:contain;
       }
     `;
     document.head.appendChild(s);
@@ -600,6 +601,8 @@ const Recorder = (() => {
       // Transition to 'playing' clears dirty flag (user hit Play with new params)
       if (st === 'playing' && lastPlayState !== 'playing') {
         paramsDirty = false;
+        // Default to 16:9 preview on playback start
+        if (!activePreviewFmt) activatePreview(FORMATS[0]);
       }
       lastPlayState = st;
 
@@ -632,36 +635,35 @@ const Recorder = (() => {
   // ===== Format preview =====
   let activePreviewFmt = null;
 
-  function applySceneSize(cssW, cssH) {
-    const S = window.SCENE;
-    if (!S) return;
-    S.camera.aspect = cssW / cssH;
-    S.camera.updateProjectionMatrix();
-    if (S.renderer) S.renderer.setSize(cssW, cssH);
-    if (S.uniforms && S.uniforms.uViewport) {
-      S.uniforms.uViewport.value.set(cssW, cssH);
-    }
-  }
-
   function activatePreview(fmt) {
     const S = window.SCENE;
-    if (!S) return;
+    if (!S || !S.renderer) return;
 
     activePreviewFmt = fmt;
     document.body.classList.add('fmt-preview-active');
 
-    // Fit format aspect ratio into viewport
+    // Render at exact format resolution (pixel-perfect, deterministic)
+    S.renderer.setPixelRatio(1);
+    S.renderer.setSize(fmt.width, fmt.height, false); // false = don't touch CSS
+    S.camera.aspect = fmt.width / fmt.height;
+    S.camera.updateProjectionMatrix();
+    if (S.uniforms && S.uniforms.uViewport) {
+      S.uniforms.uViewport.value.set(fmt.width, fmt.height);
+    }
+
+    // CSS scales the canvas to fit visually
+    const canvas = S.renderer.domElement;
     const aspect = fmt.width / fmt.height;
     const maxW = window.innerWidth - 32;
     const maxH = window.innerHeight - 32;
-    let w, h;
+    let visW, visH;
     if (maxW / maxH > aspect) {
-      h = maxH; w = Math.round(h * aspect);
+      visH = maxH; visW = Math.round(visH * aspect);
     } else {
-      w = maxW; h = Math.round(w / aspect);
+      visW = maxW; visH = Math.round(visW / aspect);
     }
-
-    applySceneSize(w, h);
+    canvas.style.width = visW + 'px';
+    canvas.style.height = visH + 'px';
 
     document.querySelectorAll('.fmt-prev-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.fmt === fmt.name);
@@ -669,27 +671,47 @@ const Recorder = (() => {
   }
 
   function deactivatePreview() {
+    const S = window.SCENE;
     activePreviewFmt = null;
     document.body.classList.remove('fmt-preview-active');
 
-    applySceneSize(window.innerWidth, window.innerHeight);
+    if (S && S.renderer) {
+      S.renderer.setPixelRatio(devicePixelRatio);
+      S.renderer.setSize(window.innerWidth, window.innerHeight);
+      S.camera.aspect = window.innerWidth / window.innerHeight;
+      S.camera.updateProjectionMatrix();
+      if (S.uniforms && S.uniforms.uViewport) {
+        S.uniforms.uViewport.value.set(window.innerWidth, window.innerHeight);
+      }
+    }
 
     document.querySelectorAll('.fmt-prev-btn').forEach(b => b.classList.remove('active'));
   }
 
   function togglePreview(fmt) {
-    if (activePreviewFmt && activePreviewFmt.name === fmt.name) {
-      deactivatePreview();
-    } else {
-      activatePreview(fmt);
-    }
+    if (activePreviewFmt && activePreviewFmt.name === fmt.name) return;
+    activatePreview(fmt);
   }
 
-  // Block scene resize handlers while preview is active — re-fit to new window size
+  // Block scene resize handlers while preview is active — re-fit CSS only
   window.addEventListener('resize', (e) => {
     if (activePreviewFmt) {
       e.stopImmediatePropagation();
-      activatePreview(activePreviewFmt);
+      // Only recompute CSS visual size — renderer stays at exact format resolution
+      const S = window.SCENE;
+      if (!S || !S.renderer) return;
+      const fmt = activePreviewFmt;
+      const aspect = fmt.width / fmt.height;
+      const maxW = window.innerWidth - 32;
+      const maxH = window.innerHeight - 32;
+      let visW, visH;
+      if (maxW / maxH > aspect) {
+        visH = maxH; visW = Math.round(visH * aspect);
+      } else {
+        visW = maxW; visH = Math.round(visW / aspect);
+      }
+      S.renderer.domElement.style.width = visW + 'px';
+      S.renderer.domElement.style.height = visH + 'px';
     }
   }, true); // capturing phase — fires before scene handlers
 
