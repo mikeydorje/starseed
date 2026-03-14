@@ -556,6 +556,7 @@ const Recorder = (() => {
         transform:translate(-50%,-50%) !important;
         box-shadow:0 0 0 1px rgba(255,255,255,0.35);
         object-fit:contain;
+        min-height:0 !important; min-width:0 !important;
       }
     `;
     document.head.appendChild(s);
