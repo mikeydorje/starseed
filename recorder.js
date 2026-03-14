@@ -629,7 +629,7 @@ const Recorder = (() => {
       recordBtn.style.display = showControls ? 'flex' : 'none';
       pauseBtn.style.display = showControls ? 'flex' : 'none';
       previewBar.style.display = showControls ? 'flex' : 'none';
-      pauseBtn.innerHTML = st === 'paused' ? '\u25b6' : '\u2759\u2759';
+      pauseBtn.innerHTML = st === 'paused' ? '\u25b6\uFE0E' : '\u2759\u2759';
       pauseBtn.title = st === 'paused' ? 'Resume' : 'Pause';
 
       // Clear preview if controls hidden or playback stops

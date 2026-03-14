@@ -313,7 +313,7 @@ function showAudioReady() {
   document.getElementById('upload-area').style.display = 'none';
   document.getElementById('audio-ready').style.display = 'block';
   document.getElementById('audio-name').textContent = currentFileName;
-  playBtn.textContent = '\u25b6 Play';
+  playBtn.textContent = '\u25b6\uFE0E Play';
   playState = 'idle';
 }
 
@@ -392,7 +392,7 @@ playBtn.addEventListener('click', () => {
   playState = 'playing';
   source.onended = () => {
     playState = 'idle';
-    playBtn.textContent = '\u25b6 Play';
+    playBtn.textContent = '\u25b6\uFE0E Play';
     controlsEl.classList.remove('hidden');
   };
 });
@@ -405,7 +405,7 @@ renderer.domElement.addEventListener('click', () => {
   if (playState === 'playing') {
     audioContext.suspend();
     playState = 'paused';
-    playBtn.textContent = '\u25b6 Resume';
+    playBtn.textContent = '\u25b6\uFE0E Resume';
     controlsEl.classList.add('visible');
     controlsEl.classList.remove('hidden');
   }
