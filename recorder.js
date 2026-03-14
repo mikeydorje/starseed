@@ -14,6 +14,14 @@ const Recorder = (() => {
     { name: '9x16', label: '9:16',  width: 1080, height: 1920 },
   ];
 
+  // Adjust vertical FOV so horizontal FOV stays constant at aspect=1 (reference).
+  // Portrait (aspect<1) widens vFOV; landscape (aspect>=1) keeps base FOV unchanged.
+  function adjustedFov(baseFov, aspect) {
+    if (aspect >= 1) return baseFov;
+    const rad = baseFov * Math.PI / 180;
+    return 2 * Math.atan(Math.tan(rad / 2) / aspect) * 180 / Math.PI;
+  }
+
   let muxerModule = null;
   let recording = false;
   let cancelRef = { cancelled: false };
@@ -171,7 +179,7 @@ const Recorder = (() => {
     recScene.add(particles);
 
     const camera = new THREE.PerspectiveCamera(
-      config.cameraFov, width / height, config.cameraNear, config.cameraFar
+      adjustedFov(config.cameraFov, width / height), width / height, config.cameraNear, config.cameraFar
     );
     camera.position.copy(config.cameraPos);
 
@@ -533,11 +541,12 @@ const Recorder = (() => {
         display:none; gap:4px; align-items:center;
       }
       .fmt-prev-btn {
-        padding:4px 8px; font-family:'Segoe UI',sans-serif; font-size:10px;
+        height:36px; padding:0 8px; display:inline-flex; align-items:center; justify-content:center;
+        font-family:'Segoe UI',sans-serif; font-size:10px;
         letter-spacing:0.5px; color:rgba(255,255,255,0.3);
         background:rgba(10,10,20,0.5); border:1px solid rgba(255,255,255,0.08);
         border-radius:6px; cursor:pointer; transition:all 0.3s;
-        backdrop-filter:blur(6px); line-height:1;
+        backdrop-filter:blur(6px); line-height:1; box-sizing:border-box;
       }
       .fmt-prev-btn:hover { color:rgba(255,255,255,0.6); border-color:rgba(255,255,255,0.15); }
       .fmt-prev-btn.active { color:#b8b0e8; border-color:rgba(123,111,219,0.4); background:rgba(123,111,219,0.15); }
@@ -545,7 +554,7 @@ const Recorder = (() => {
       body.fmt-preview-active canvas {
         position:fixed !important; top:50% !important; left:50% !important;
         transform:translate(-50%,-50%) !important;
-        box-shadow:0 0 0 1px rgba(255,255,255,0.12);
+        box-shadow:0 0 0 1px rgba(255,255,255,0.35);
         object-fit:contain;
       }
     `;
@@ -601,8 +610,14 @@ const Recorder = (() => {
       // Transition to 'playing' clears dirty flag (user hit Play with new params)
       if (st === 'playing' && lastPlayState !== 'playing') {
         paramsDirty = false;
-        // Default to 16:9 preview on playback start
-        if (!activePreviewFmt) activatePreview(FORMATS[0]);
+        // Re-activate preview after resize-triggered pause so it reconfigures for new window size
+        if (activePreviewFmt && _resizedDuringPreview) {
+          _resizedDuringPreview = false;
+          activatePreview(activePreviewFmt);
+        } else if (!activePreviewFmt) {
+          // Default to 16:9 preview on playback start
+          activatePreview(FORMATS[0]);
+        }
       }
       lastPlayState = st;
 
@@ -634,10 +649,15 @@ const Recorder = (() => {
 
   // ===== Format preview =====
   let activePreviewFmt = null;
+  let _baseFov = null;
+  let _resizedDuringPreview = false;
 
   function activatePreview(fmt) {
     const S = window.SCENE;
     if (!S || !S.renderer) return;
+
+    // Capture the scene's native FOV before any preview changes
+    if (_baseFov === null) _baseFov = S.camera.fov;
 
     activePreviewFmt = fmt;
     document.body.classList.add('fmt-preview-active');
@@ -645,7 +665,9 @@ const Recorder = (() => {
     // Render at exact format resolution (pixel-perfect, deterministic)
     S.renderer.setPixelRatio(1);
     S.renderer.setSize(fmt.width, fmt.height, false); // false = don't touch CSS
-    S.camera.aspect = fmt.width / fmt.height;
+    const fmtAspect = fmt.width / fmt.height;
+    S.camera.aspect = fmtAspect;
+    S.camera.fov = adjustedFov(_baseFov, fmtAspect);
     S.camera.updateProjectionMatrix();
     if (S.uniforms && S.uniforms.uViewport) {
       S.uniforms.uViewport.value.set(fmt.width, fmt.height);
@@ -679,6 +701,8 @@ const Recorder = (() => {
       S.renderer.setPixelRatio(devicePixelRatio);
       S.renderer.setSize(window.innerWidth, window.innerHeight);
       S.camera.aspect = window.innerWidth / window.innerHeight;
+      if (_baseFov !== null) S.camera.fov = _baseFov;
+      _baseFov = null;
       S.camera.updateProjectionMatrix();
       if (S.uniforms && S.uniforms.uViewport) {
         S.uniforms.uViewport.value.set(window.innerWidth, window.innerHeight);
@@ -697,9 +721,13 @@ const Recorder = (() => {
   window.addEventListener('resize', (e) => {
     if (activePreviewFmt) {
       e.stopImmediatePropagation();
-      // Only recompute CSS visual size — renderer stays at exact format resolution
+      // Pause playback on resize — preview state goes stale with new window dimensions
       const S = window.SCENE;
       if (!S || !S.renderer) return;
+      if (S.playState === 'playing') {
+        _resizedDuringPreview = true;
+        togglePause();
+      }
       const fmt = activePreviewFmt;
       const aspect = fmt.width / fmt.height;
       const maxW = window.innerWidth - 32;

@@ -63,6 +63,7 @@
     }
     #fs-btn:hover { color: #fff; background: rgba(112,96,176,0.3); border-color: rgba(112,96,176,0.4); }
     #fs-btn svg { width: 18px; height: 18px; }
+    @media (pointer:coarse) and (hover:none) { #fs-btn { display:none !important; } }
     #audio-ready { text-align: center; }
     .audio-filename { display: block; color: rgba(255,255,255,0.5); font-size: 11px; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; margin-left: auto; margin-right: auto; }
     .play-btn { background: rgba(80,200,80,0.25); color: rgba(80,200,80,0.9); border: 1px solid rgba(80,200,80,0.3); padding: 8px 20px; border-radius: 20px; cursor: pointer; font-family: inherit; font-size: 13px; transition: all 0.3s; }
@@ -109,7 +110,7 @@
     </div>
 
     <div class="param">
-      <label><span class="name">✿ Harmonic</span><span class="val" id="p2-val">40</span></label>
+      <label><span class="name">✿︎ Harmonic</span><span class="val" id="p2-val">40</span></label>
       <div class="desc">Rose curve petals — r = cos(kθ), the flowers hidden in π</div>
       <input type="range" id="p2" min="0" max="100" value="40" />
     </div>
