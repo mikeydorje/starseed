@@ -108,8 +108,8 @@ const fragmentShader = `
 `;
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 100);
-camera.position.set(0, 0, 5.5);
+const camera = new THREE.PerspectiveCamera(41, innerWidth / innerHeight, 0.1, 100);
+camera.position.set(0, 0, 6.9);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(devicePixelRatio);
