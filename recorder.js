@@ -14,15 +14,29 @@ const Recorder = (() => {
     { name: '9x16', label: '9:16',  width: 1080, height: 1920 },
   ];
 
-  // Adjust vertical FOV so horizontal FOV stays constant at aspect=1 (reference).
-  // Portrait (aspect<1) widens vFOV; landscape (aspect>=1) keeps base FOV unchanged.
-  function adjustedFov(baseFov, aspect) {
-    if (aspect >= 1) return baseFov;
+  // Compute FOV with optional zoom lock.
+  // lock=0 → normal (portrait corrected wider, landscape untouched).
+  // lock=1 → zoomed: portrait reverts to raw baseFov, landscape narrows symmetrically,
+  //           square treated as 16:9 landscape (since 1:1 is the identity point).
+  const SQUARE_PSEUDO_ASPECT = 1920 / 1080; // treat 1:1 like 16:9 when locked
+  function adjustedFov(baseFov, aspect, lock) {
+    const t = lock || 0;
+    const effectiveAspect = (t && aspect === 1) ? SQUARE_PSEUDO_ASPECT : aspect;
     const rad = baseFov * Math.PI / 180;
-    return 2 * Math.atan(Math.tan(rad / 2) / aspect) * 180 / Math.PI;
+    const corrected = 2 * Math.atan(Math.tan(rad / 2) / effectiveAspect) * 180 / Math.PI;
+    if (effectiveAspect < 1) {
+      // Portrait: default=corrected(wider), locked=baseFov(zoomed)
+      return corrected + (baseFov - corrected) * t;
+    }
+    // Landscape (or pseudo-landscape for 1:1): default=baseFov, locked=corrected(narrower → zoomed)
+    return baseFov + (corrected - baseFov) * t;
   }
 
   let muxerModule = null;
+  // Zoom Lock: 0 = normal (corrected FOV), 1 = raw FOV (experimental "too large" aesthetic)
+  // Stored as float for future fine-tuning (interpolate between corrected and raw)
+  let zoomLock = 0;
+
   let recording = false;
   let cancelRef = { cancelled: false };
   let recordBtn = null;
@@ -179,7 +193,7 @@ const Recorder = (() => {
     recScene.add(particles);
 
     const camera = new THREE.PerspectiveCamera(
-      adjustedFov(config.cameraFov, width / height), width / height, config.cameraNear, config.cameraFar
+      adjustedFov(config.cameraFov, width / height, zoomLock), width / height, config.cameraNear, config.cameraFar
     );
     camera.position.copy(config.cameraPos);
 
@@ -550,6 +564,17 @@ const Recorder = (() => {
       }
       .fmt-prev-btn:hover { color:rgba(255,255,255,0.6); border-color:rgba(255,255,255,0.15); }
       .fmt-prev-btn.active { color:#b8b0e8; border-color:rgba(123,111,219,0.4); background:rgba(123,111,219,0.15); }
+      #zoom-lock-toggle {
+        height:36px; padding:0 8px; display:inline-flex; align-items:center; justify-content:center;
+        font-family:'Segoe UI',sans-serif; font-size:10px;
+        letter-spacing:0.5px; color:rgba(255,255,255,0.25);
+        background:rgba(10,10,20,0.5); border:1px solid rgba(255,255,255,0.06);
+        border-radius:6px; cursor:pointer; transition:all 0.3s;
+        backdrop-filter:blur(6px); line-height:1; box-sizing:border-box;
+        margin-left:2px;
+      }
+      #zoom-lock-toggle:hover { color:rgba(255,255,255,0.5); border-color:rgba(255,255,255,0.12); }
+      #zoom-lock-toggle.active { color:#e8c080; border-color:rgba(219,175,111,0.4); background:rgba(219,175,111,0.12); }
       body.fmt-preview-active { background:#000 !important; overflow:hidden !important; }
       body.fmt-preview-active canvas {
         position:fixed !important; top:50% !important; left:50% !important;
@@ -594,6 +619,17 @@ const Recorder = (() => {
       btn.addEventListener('click', () => togglePreview(f));
       previewBar.appendChild(btn);
     });
+    // Zoom Lock toggle — bypasses FOV correction for experimental "too large" aesthetic
+    const zlBtn = document.createElement('button');
+    zlBtn.id = 'zoom-lock-toggle';
+    zlBtn.textContent = '\u2316 Zoom Lock';
+    zlBtn.title = 'Lock FOV across all aspect ratios (experimental)';
+    zlBtn.addEventListener('click', () => {
+      zoomLock = zoomLock ? 0 : 1;
+      zlBtn.classList.toggle('active', !!zoomLock);
+      if (activePreviewFmt) activatePreview(activePreviewFmt);
+    });
+    previewBar.appendChild(zlBtn);
     document.body.appendChild(previewBar);
 
     // Watch for slider changes — mark params dirty so rec hides until next play
@@ -668,7 +704,7 @@ const Recorder = (() => {
     S.renderer.setSize(fmt.width, fmt.height, false); // false = don't touch CSS
     const fmtAspect = fmt.width / fmt.height;
     S.camera.aspect = fmtAspect;
-    S.camera.fov = adjustedFov(_baseFov, fmtAspect);
+    S.camera.fov = adjustedFov(_baseFov, fmtAspect, zoomLock);
     S.camera.updateProjectionMatrix();
     if (S.uniforms && S.uniforms.uViewport) {
       S.uniforms.uViewport.value.set(fmt.width, fmt.height);
