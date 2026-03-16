@@ -20,6 +20,7 @@ const vertexShader = `
   varying float vFreqAmp;
   varying float vPhase;
   varying float vWisp;
+  const float VIS_INPUT_GAIN = 0.50118723; // -6 dB visual attenuation
 
   void main() {
     int idx = int(clamp(floor(aNode * 63.0), 0.0, 63.0));
@@ -28,8 +29,8 @@ const vertexShader = `
     float amp2 = uFrequencyData[idx2] / 255.0;
 
     float gate = uThreshold * 0.25;
-    float gAmp = max(amp - gate, 0.0) / max(1.0 - gate, 0.01);
-    float gAmp2 = max(amp2 - gate, 0.0) / max(1.0 - gate, 0.01);
+    float gAmp = (max(amp - gate, 0.0) / max(1.0 - gate, 0.01)) * VIS_INPUT_GAIN;
+    float gAmp2 = (max(amp2 - gate, 0.0) / max(1.0 - gate, 0.01)) * VIS_INPUT_GAIN;
 
     // Scatter: particles drift outward from their origin points
     float outward = sin(uTime * 0.008 + aPhase * 2.0) * uScatter * 0.2;
