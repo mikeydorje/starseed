@@ -1,0 +1,33 @@
+blown-a-wish.js
+  7028a8bff59235f8 23
+only-shallow.js
+  7028a8bff59235f8 22
+to-here-knows-when.js
+  7028a8bff59235f8 23
+i-only-said.js
+  7028a8bff59235f8 23
+when-you-sleep.js
+  7028a8bff59235f8 23
+sometimes.js
+  7028a8bff59235f8 23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "9e152374c01cf5fd2556dcf834fc99b93531f5e9",
+  "prompts": {
+    "7028a8bff59235f8": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "97584eb9-d9a4-4a92-a4ca-fb0aba369e85",
+        "model": "unknown"
+      },
+      "human_author": "Mikey Dorje <mikeydorje@gmail.com>",
+      "messages": [],
+      "total_additions": 23,
+      "total_deletions": 17,
+      "accepted_lines": 6,
+      "overriden_lines": 0
+    }
+  }
+}
