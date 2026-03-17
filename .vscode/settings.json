@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^cd /home/organicelectronics/audio-vis && mv to-here-knows-when\\.html wip\\.html && mv to-here-knows-when\\.js wip\\.js && mv when-you-sleep\\.html to-here-knows-when\\.html && mv when-you-sleep\\.js to-here-knows-when\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

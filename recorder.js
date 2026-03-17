@@ -14,7 +14,7 @@ const Recorder = (() => {
     { name: '9x16', label: '9:16',  width: 1080, height: 1920 },
   ];
 
-  // Compute FOV with optional zoom lock.
+  // Compute FOV with optional Aperture Scale.
   // lock=0 → normal (portrait corrected wider, landscape untouched).
   // lock=1 → zoomed: portrait reverts to raw baseFov, landscape narrows symmetrically,
   //           square treated as 16:9 landscape (since 1:1 is the identity point).
@@ -33,7 +33,7 @@ const Recorder = (() => {
   }
 
   let muxerModule = null;
-  // Zoom Lock: 0 = normal (corrected FOV), 1 = raw FOV (experimental "too large" aesthetic)
+  // Aperture Scale: 0 = normal (corrected FOV), 1 = experimental reframing aesthetic
   // Stored as float for future fine-tuning (interpolate between corrected and raw)
   let zoomLock = 0;
 
@@ -196,6 +196,7 @@ const Recorder = (() => {
       adjustedFov(config.cameraFov, width / height, zoomLock), width / height, config.cameraNear, config.cameraFar
     );
     camera.position.copy(config.cameraPos);
+    camera.quaternion.copy(config.cameraQuat);
 
     return { renderer, scene: recScene, camera, particles, uniforms, freqUniform };
   }
@@ -379,6 +380,7 @@ const Recorder = (() => {
       cameraNear:      S.camera.near,
       cameraFar:       S.camera.far,
       cameraPos:       S.camera.position.clone(),
+      cameraQuat:      S.camera.quaternion.clone(),
       uniformSnapshot,
       pixelRatio:      window.devicePixelRatio || 1,
       seedCenter:      Object.assign({}, S.seedCenter),
@@ -619,11 +621,11 @@ const Recorder = (() => {
       btn.addEventListener('click', () => togglePreview(f));
       previewBar.appendChild(btn);
     });
-    // Zoom Lock toggle — bypasses FOV correction for experimental "too large" aesthetic
+    // Aperture Scale toggle — reframes composition across aspect ratios
     const zlBtn = document.createElement('button');
     zlBtn.id = 'zoom-lock-toggle';
-    zlBtn.textContent = '\u2316 Zoom Lock';
-    zlBtn.title = 'Lock FOV across all aspect ratios (experimental)';
+    zlBtn.textContent = '\u25cd Aperture Scale';
+    zlBtn.title = 'Experimental composition scaling across all aspect ratios';
     zlBtn.addEventListener('click', () => {
       zoomLock = zoomLock ? 0 : 1;
       zlBtn.classList.toggle('active', !!zoomLock);

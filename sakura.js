@@ -1,62 +1,76 @@
-// --- Lotus: Audio-Reactive Petal Visualizer ---
+// --- Sakura: Audio-Reactive Cherry Blossom Visualizer ---
+// Five-petal pentagonal symmetry. Branches spiral outward following
+// golden-angle phyllotaxis. Falling petals trace parabolic arcs.
+// Pink-white inner glow deepening to magenta at the edges.
 
-// Vertex shader: layered petal rings that rise and curl with audio
+// Vertex shader: five-fold petal clusters on spiralling branches,
+// with falling petals that drift and tumble
 const vertexShader = `
   uniform float uFrequencyData[64];
   uniform float uTime;
-  uniform float uUnfurl;
-  uniform float uPondRipple;
+  uniform float uBloom;
+  uniform float uFall;
   uniform float uBreath;
-  uniform float uStamen;
-  uniform float uDewPoint;
+  uniform float uBranch;
+  uniform float uFrost;
   uniform vec2 uViewport;
   attribute float aPetalLayer;
   attribute float aPetalAngle;
   attribute float aPetalPos;
+  attribute float aFallSeed;
   varying float vLayer;
   varying float vFreqAmp;
   varying float vCurl;
+  varying float vFalling;
 
   void main() {
-    // Each petal reads from a frequency bin based on its layer (inner=bass, outer=treble)
-    float normLayer = aPetalLayer * uStamen;
+    // Each branch cluster reads from a frequency bin (inner=bass, outer=treble)
+    float normLayer = aPetalLayer * uBranch;
     int idx = int(clamp(floor(normLayer * 63.0), 0.0, 63.0));
     float amp = uFrequencyData[idx] / 255.0;
 
-    // Gate quiet signals
-    float gate = uDewPoint * 0.2 + (1.0 - aPetalLayer) * 0.1;
+    // Gate quiet signals — frost threshold
+    float gate = uFrost * 0.2 + (1.0 - aPetalLayer) * 0.1;
     float gatedAmp = max(amp - gate, 0.0) / max(1.0 - gate, 0.01);
 
-    // Petal curl: outer petals open more with audio, shaped by Unfurl
-    float openAmount = gatedAmp * uUnfurl * aPetalLayer;
-    float curl = openAmount * 0.8;
+    // Five-petal bloom: outer clusters open wider with audio
+    float openAmount = gatedAmp * uBloom * aPetalLayer;
+    float curl = openAmount * 0.7;
 
-    // Vertical rise: inner petals lift higher (flower center), breath modulates
-    float rise = gatedAmp * (1.0 - aPetalLayer * 0.6) * uBreath;
+    // Vertical breath: inner branches lift higher
+    float rise = gatedAmp * (1.0 - aPetalLayer * 0.5) * uBreath;
 
-    // Pond surface ripple underneath
-    float ripple = sin(aPetalAngle * 4.0 + uTime * 1.2) * uPondRipple * 0.08
-                 + cos(aPetalLayer * 8.0 + uTime * 0.8) * uPondRipple * 0.05;
+    // Hanafubuki (petal fall): audio-reactive falling with parabolic gravity
+    float fallTrigger = smoothstep(0.3, 0.8, gatedAmp) * uFall;
+    float fallPhase = fract(aFallSeed + uTime * 0.04 * (0.5 + uFall * 0.5));
+    float fallActive = fallTrigger * step(0.6, aFallSeed);
+    float fallY = -fallPhase * fallPhase * 3.0 * fallActive;
+    float fallX = sin(fallPhase * 6.28 + aFallSeed * 12.0) * 0.8 * fallActive;
+    float fallZ = cos(fallPhase * 4.0 + aFallSeed * 8.0) * 0.4 * fallActive;
+    // Tumble rotation for falling petals
+    float tumble = sin(uTime * 2.0 + aFallSeed * 20.0) * 0.15 * fallActive;
 
     vec3 newPos = position;
-    // Petals tilt outward as they open (curl along Y relative to radius)
-    newPos.y += rise * 0.6 + ripple;
-    newPos.x += newPos.x * curl * 0.3;
-    newPos.z += newPos.z * curl * 0.3;
-    // Gentle swaying
-    newPos.x += sin(uTime * 0.5 + aPetalAngle) * 0.02 * (1.0 + gatedAmp);
+    newPos.y += rise * 0.5 + fallY + tumble;
+    newPos.x += newPos.x * curl * 0.3 + fallX;
+    newPos.z += newPos.z * curl * 0.3 + fallZ;
+    // Gentle branch sway in wind
+    newPos.x += sin(uTime * 0.4 + aPetalAngle + aPetalLayer * 2.0) * 0.03 * (1.0 + gatedAmp);
+    newPos.z += cos(uTime * 0.3 + aPetalAngle * 0.7) * 0.02;
 
     vLayer = aPetalLayer;
     vFreqAmp = gatedAmp;
     vCurl = curl;
+    vFalling = fallActive;
 
     vec4 mvPos = modelViewMatrix * vec4(newPos, 1.0);
 
-    // Point size: delicate at rest, swells with audio, outer petals larger
-    float baseSize = mix(0.6, 1.4, aPetalLayer);
-    gl_PointSize = (baseSize + gatedAmp * 3.5) * (280.0 / -mvPos.z) * step(0.005, gatedAmp) + 1.0;
+    // Point size: delicate at rest, swells with audio
+    float baseSize = mix(0.5, 1.3, aPetalLayer);
+    float fallShrink = 1.0 - fallActive * 0.3;
+    gl_PointSize = (baseSize + gatedAmp * 3.0) * fallShrink * (280.0 / -mvPos.z) * step(0.005, gatedAmp + fallActive * 0.5) + 0.8;
 
-    // Viewport constraint: account for point radius in pixels when clamping
+    // Viewport constraint — boundary-aware clamping
     vec4 clipPos = projectionMatrix * mvPos;
     vec2 ndc = clipPos.xy / clipPos.w;
     vec2 pointRadiusNDC = vec2(gl_PointSize) / uViewport;
@@ -69,34 +83,35 @@ const vertexShader = `
   }
 `;
 
-// Fragment shader: soft organic colors, petal-like
+// Fragment shader: sakura palette — white-pink core, deeper rose/magenta edges
 const fragmentShader = `
   varying float vLayer;
   varying float vFreqAmp;
   varying float vCurl;
-  uniform float uNectar;
+  varying float vFalling;
+  uniform float uSeason;
 
   void main() {
     float dist = length(gl_PointCoord - vec2(0.5));
     if (dist > 0.5) discard;
-    // Softer falloff than SMBH — organic, diffused edges
-    float alpha = 1.0 - smoothstep(0.15, 0.5, dist);
+    // Soft organic falloff — slightly sharper than lotus for crisper petals
+    float alpha = 1.0 - smoothstep(0.12, 0.5, dist);
 
-    // Palette: Nectar shifts between cool moonlit (0) and warm sunrise (1)
-    // Inner petals: cream/white/pink, outer: deeper rose/magenta/violet
-    vec3 innerCool = vec3(0.85, 0.82, 0.90);
-    vec3 innerWarm = vec3(0.95, 0.85, 0.75);
-    vec3 midCool   = vec3(0.80, 0.45, 0.60);
-    vec3 midWarm   = vec3(0.90, 0.50, 0.40);
-    vec3 outerCool = vec3(0.45, 0.20, 0.50);
-    vec3 outerWarm = vec3(0.70, 0.25, 0.30);
-    vec3 deepCool  = vec3(0.15, 0.08, 0.25);
-    vec3 deepWarm  = vec3(0.30, 0.08, 0.10);
+    // Sakura palette: Season shifts between pale spring (0) and deep twilight (1)
+    // Inner: white-pink, Mid: soft pink, Outer: rose-magenta, Deep: dark branch
+    vec3 innerSpring = vec3(0.98, 0.92, 0.94);
+    vec3 innerDeep   = vec3(0.95, 0.80, 0.85);
+    vec3 midSpring   = vec3(0.95, 0.65, 0.75);
+    vec3 midDeep     = vec3(0.85, 0.40, 0.55);
+    vec3 outerSpring = vec3(0.80, 0.35, 0.50);
+    vec3 outerDeep   = vec3(0.60, 0.15, 0.35);
+    vec3 deepSpring  = vec3(0.30, 0.15, 0.20);
+    vec3 deepDeep    = vec3(0.20, 0.05, 0.12);
 
-    vec3 inner = mix(innerCool, innerWarm, uNectar);
-    vec3 mid   = mix(midCool, midWarm, uNectar);
-    vec3 outer = mix(outerCool, outerWarm, uNectar);
-    vec3 deep  = mix(deepCool, deepWarm, uNectar);
+    vec3 inner = mix(innerSpring, innerDeep, uSeason);
+    vec3 mid   = mix(midSpring, midDeep, uSeason);
+    vec3 outer = mix(outerSpring, outerDeep, uSeason);
+    vec3 deep  = mix(deepSpring, deepDeep, uSeason);
 
     // Map layer + frequency to color
     float layerMix = vLayer;
@@ -109,12 +124,16 @@ const fragmentShader = `
       color = mix(outer, deep, (layerMix - 0.66) / 0.34);
     }
 
-    // Audio brightens toward white/cream at the peaks
-    color = mix(color, inner, vFreqAmp * 0.35);
+    // Audio brightens toward white-pink at peaks
+    color = mix(color, inner, vFreqAmp * 0.4);
 
-    // Gentle transparency: inner more opaque, outer more ethereal
-    alpha *= mix(0.7, 0.35, vLayer);
-    alpha *= 0.5 + vFreqAmp * 0.5;
+    // Falling petals get slightly more transparent and warmer
+    color = mix(color, midSpring, vFalling * 0.2);
+
+    // Inner more opaque, outer more ethereal, falling petals fade
+    alpha *= mix(0.7, 0.3, vLayer);
+    alpha *= 0.45 + vFreqAmp * 0.55;
+    alpha *= 1.0 - vFalling * 0.25;
 
     gl_FragColor = vec4(color, alpha);
   }
@@ -136,12 +155,12 @@ const frequencyUniform = new Float32Array(64);
 const uniforms = {
   uFrequencyData: { value: frequencyUniform },
   uTime: { value: 0.0 },
-  uUnfurl: { value: 1.2 },
-  uPondRipple: { value: 0.5 },
+  uBloom: { value: 1.2 },
+  uFall: { value: 0.5 },
   uBreath: { value: 1.0 },
-  uStamen: { value: 0.7 },
-  uNectar: { value: 0.5 },
-  uDewPoint: { value: 0.5 },
+  uBranch: { value: 0.7 },
+  uSeason: { value: 0.5 },
+  uFrost: { value: 0.5 },
   uViewport: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
 };
 
@@ -167,7 +186,6 @@ const valDisplays = {
   p8: document.getElementById('p8-val')
 };
 
-// Randomize on load + live-update displays
 function randomizeSliders() {
   Object.keys(sliders).forEach(k => {
     const s = sliders[k];
@@ -187,48 +205,46 @@ randomizeSliders();
 const randomizeBtn = document.getElementById('randomize-btn');
 if (randomizeBtn) randomizeBtn.addEventListener('click', randomizeSliders);
 
-// Compute derived values with interdependencies
 function computeSeedValues() {
-  const unfurl   = sliders.p1.value / 100;
-  const pond     = sliders.p2.value / 100;
-  const breath   = sliders.p3.value / 100;
-  const stamen   = sliders.p4.value / 100;
-  const nectar   = sliders.p5.value / 100;
-  const rootMem  = sliders.p6.value / 100;
-  const dewPoint = sliders.p7.value / 100;
-  const pollen   = sliders.p8.value / 100;
+  const bloom   = sliders.p1.value / 100;
+  const fall    = sliders.p2.value / 100;
+  const breath  = sliders.p3.value / 100;
+  const branch  = sliders.p4.value / 100;
+  const season  = sliders.p5.value / 100;
+  const aware   = sliders.p6.value / 100;   // mono no aware — arc intensity
+  const frost   = sliders.p7.value / 100;
+  const kaze    = sliders.p8.value / 100;    // wind — drift
 
-  // Breath deepens unfurl (breathing opens the petals wider)
-  const effectiveUnfurl = unfurl * (1.0 + breath * 0.4);
-  // Pond dampens breath (still water calms the breathing)
-  const effectiveBreath = breath * (1.0 - pond * 0.25);
-  // Stamen complexity scales with unfurl (more open = more inner detail visible)
-  const effectiveStamen = stamen * (0.6 + effectiveUnfurl * 0.4);
+  // Breath deepens bloom (breathing opens blossoms wider)
+  const effectiveBloom = bloom * (1.0 + breath * 0.4);
+  // Fall dampens breath (falling petals calm the sway)
+  const effectiveBreath = breath * (1.0 - fall * 0.2);
+  // Branch complexity scales with bloom
+  const effectiveBranch = branch * (0.6 + effectiveBloom * 0.4);
 
-  const uUnfurl = 0.3 + effectiveUnfurl * 2.0;
-  const uPondRipple = 0.1 + pond * 1.5;
+  const uBloom = 0.3 + effectiveBloom * 2.0;
+  const uFall = 0.1 + fall * 1.5;
   const uBreath = 0.2 + effectiveBreath * 2.5;
-  const uStamen = 0.3 + effectiveStamen * 0.7;
+  const uBranch = 0.3 + effectiveBranch * 0.7;
 
-  // Petal layers (geometry density)
-  const layers = Math.floor(5 + stamen * 25);
-  const petalsPerRing = Math.floor(8 + unfurl * 20);
+  // Geometry density
+  const layers = Math.floor(5 + branch * 25);
+  const petalsPerRing = Math.floor(8 + bloom * 20);
 
-  // Analyser smoothing from pond (still water = smooth)
-  const smoothing = 0.7 + pond * 0.25;
+  // Analyser smoothing from fall (more fall = slightly smoother)
+  const smoothing = 0.7 + fall * 0.25;
 
-  // Rotation: gentle, mostly Y, slight tilt
-  const rotSpeedY = 0.02 + unfurl * 0.06 + pollen * 0.08;
-  const rotSpeedX = 0.005 + pollen * 0.02;
+  const rotSpeedY = 0.02 + bloom * 0.06 + kaze * 0.08;
+  const rotSpeedX = 0.005 + kaze * 0.02;
 
   return {
-    uUnfurl, uPondRipple, uBreath, uStamen,
-    nectar, rootMem, dewPoint, pollen,
+    uBloom, uFall, uBreath, uBranch,
+    season, aware, frost, kaze,
     layers, petalsPerRing, smoothing, rotSpeedY, rotSpeedX
   };
 }
 
-// --- Geometry: Concentric petal rings laid flat, tilted upward at edges ---
+// --- Geometry: Five-petal sakura clusters on spiralling branches ---
 let particles;
 function buildPetals(layers, petalsPerRing) {
   if (particles) {
@@ -240,31 +256,43 @@ function buildPetals(layers, petalsPerRing) {
   const petalLayers = [];
   const petalAngles = [];
   const petalPositions = [];
+  const fallSeeds = [];
+
+  const GOLDEN_ANGLE = Math.PI * (3.0 - Math.sqrt(5.0)); // ~137.5 degrees
 
   for (let l = 0; l < layers; l++) {
     const layerNorm = l / layers;
-    const radius = 0.15 + layerNorm * 1.8;
-    // Slight vertical offset: inner layers sit higher (flower cup), flipped to face camera
+    // Spiral branch placement using golden angle (phyllotaxis)
+    const branchAngle = l * GOLDEN_ANGLE;
+    const radius = 0.12 + layerNorm * 1.9;
+    // Branches droop slightly outward, inner ones sit higher
     const baseY = (1.0 - layerNorm) * 0.3 - layerNorm * 0.1;
-    const ptsInRing = Math.floor(petalsPerRing * (0.4 + layerNorm * 0.6));
-    // Each layer is rotated slightly (fibonacci-ish spiral)
-    const layerRotation = l * 0.618 * Math.PI * 2;
+    const ptsInRing = Math.floor(petalsPerRing * (0.3 + layerNorm * 0.7));
 
     for (let p = 0; p < ptsInRing; p++) {
-      const angle = (p / ptsInRing) * Math.PI * 2 + layerRotation;
-      // Multiple points along each petal's radial extent
+      // Five-fold symmetry: petals arranged in groups of 5
+      const petalGroup = Math.floor(p / 5);
+      const petalInGroup = p % 5;
+      const groupAngle = (petalGroup / Math.ceil(ptsInRing / 5)) * Math.PI * 2 + branchAngle;
+      // Each petal in the five-fold cluster offset by 72 degrees (2*PI/5)
+      const petalOffset = petalInGroup * (Math.PI * 2 / 5);
+      const angle = groupAngle + petalOffset * 0.15; // subtle 5-fold spread
+
       const steps = 3;
       for (let s = 0; s < steps; s++) {
         const t = s / steps;
-        const r = radius + t * (1.8 / layers) * 0.8;
-        const x = Math.cos(angle) * r;
+        const r = radius + t * (1.9 / layers) * 0.7;
+        // Sakura petal shape: slightly asymmetric — one side rounder
+        const asymmetry = Math.sin(petalOffset + layerNorm * 3.0) * 0.06;
+        const x = Math.cos(angle) * r + asymmetry;
         const z = Math.sin(angle) * r;
-        // Petals droop outward (flipped)
-        const y = baseY + t * layerNorm * 0.15;
+        const y = baseY + t * layerNorm * 0.12;
         positions.push(x, y, z);
         petalLayers.push(layerNorm);
         petalAngles.push(angle);
         petalPositions.push(t);
+        // Fall seed: random value determines which petals can fall
+        fallSeeds.push(Math.random());
       }
     }
   }
@@ -274,6 +302,7 @@ function buildPetals(layers, petalsPerRing) {
   geometry.setAttribute('aPetalLayer', new THREE.Float32BufferAttribute(petalLayers, 1));
   geometry.setAttribute('aPetalAngle', new THREE.Float32BufferAttribute(petalAngles, 1));
   geometry.setAttribute('aPetalPos', new THREE.Float32BufferAttribute(petalPositions, 1));
+  geometry.setAttribute('aFallSeed', new THREE.Float32BufferAttribute(fallSeeds, 1));
 
   const material = new THREE.ShaderMaterial({
     vertexShader,
@@ -292,13 +321,13 @@ buildPetals(15, 16);
 // --- Baked centers ---
 let rotSpeedY = 0.04;
 let rotSpeedX = 0.01;
-let bakedRootMem = 0.55;
-let bakedPollen = 0.4;
+let bakedAware = 0.55;
+let bakedKaze = 0.4;
 let seedCenter = {
-  uUnfurl: 1.2,
-  uPondRipple: 0.5,
+  uBloom: 1.2,
+  uFall: 0.5,
   uBreath: 1.0,
-  uStamen: 0.7
+  uBranch: 0.7
 };
 
 // --- Audio Setup ---
@@ -368,23 +397,23 @@ playBtn.addEventListener('click', () => {
   controlsEl.classList.add('hidden');
   controlsEl.classList.remove('visible');
 
-  uniforms.uUnfurl.value = seeds.uUnfurl;
-  uniforms.uPondRipple.value = seeds.uPondRipple;
+  uniforms.uBloom.value = seeds.uBloom;
+  uniforms.uFall.value = seeds.uFall;
   uniforms.uBreath.value = seeds.uBreath;
-  uniforms.uStamen.value = seeds.uStamen;
-  uniforms.uNectar.value = seeds.nectar;
-  uniforms.uDewPoint.value = seeds.dewPoint;
+  uniforms.uBranch.value = seeds.uBranch;
+  uniforms.uSeason.value = seeds.season;
+  uniforms.uFrost.value = seeds.frost;
   rotSpeedY = seeds.rotSpeedY;
   rotSpeedX = seeds.rotSpeedX;
 
   seedCenter = {
-    uUnfurl: seeds.uUnfurl,
-    uPondRipple: seeds.uPondRipple,
+    uBloom: seeds.uBloom,
+    uFall: seeds.uFall,
     uBreath: seeds.uBreath,
-    uStamen: seeds.uStamen
+    uBranch: seeds.uBranch
   };
-  bakedRootMem = seeds.rootMem;
-  bakedPollen = seeds.pollen;
+  bakedAware = seeds.aware;
+  bakedKaze = seeds.kaze;
   buildPetals(seeds.layers, seeds.petalsPerRing);
   analyser.smoothingTimeConstant = seeds.smoothing;
 
@@ -433,12 +462,12 @@ window.addEventListener('resize', () => {
   uniforms.uViewport.value.set(window.innerWidth, window.innerHeight);
 });
 
-// --- Narrative Arc: Lotus story ---
-// Act I:   Seed (0-12%)       — still, almost nothing, a point of potential
-// Act II:  Sprout (12-30%)    — first stirrings, reaching upward slowly
-// Act III: Bloom (30-60%)     — full opening, all petals spread, color flood
-// Act IV:  Radiance (60-80%)  — luminous plateau, gentle swaying peak
-// Act V:   Close (80-100%)    — petals curl inward, returning to the mud
+// --- Narrative Arc: Sakura story (Mono no Aware) ---
+// Act I:   Bud (0-12%)        — frost-still, tiny green promise
+// Act II:  First Bloom (12-30%) — petals unfolding, colour swelling
+// Act III: Full Bloom (30-55%)  — hanami glory, all branches open, petals begin to fall
+// Act IV:  Scattering (55-80%)  — hanafubuki, petals everywhere, bittersweet peak
+// Act V:   Bare Branch (80-100%) — emptying, quiet beauty of what remains
 function storyArc(progress) {
   const p = Math.max(0, Math.min(1, progress));
   const sm = (e0, e1, x) => {
@@ -446,31 +475,33 @@ function storyArc(progress) {
     return t * t * (3 - 2 * t);
   };
 
-  const unfurlArc = 0.15
+  const bloomArc = 0.15
     + 0.15 * sm(0.0, 0.12, p)
-    + 0.5  * sm(0.12, 0.4, p)
-    + 0.3  * sm(0.4, 0.6, p)
-    - 0.15 * sm(0.7, 0.85, p)
-    - 0.5  * sm(0.85, 1.0, p);
+    + 0.5  * sm(0.12, 0.35, p)
+    + 0.25 * sm(0.35, 0.55, p)
+    - 0.2  * sm(0.6, 0.8, p)
+    - 0.45 * sm(0.82, 1.0, p);
 
-  const pondArc = 0.8
-    - 0.3 * sm(0.1, 0.3, p)
-    - 0.3 * sm(0.3, 0.5, p)
-    + 0.2 * sm(0.6, 0.8, p)
-    + 0.4 * sm(0.85, 1.0, p);
+  // Fall increases through mid-to-late song, peaks during scattering
+  const fallArc = 0.1
+    + 0.1 * sm(0.2, 0.35, p)
+    + 0.5 * sm(0.35, 0.55, p)
+    + 0.3 * sm(0.55, 0.75, p)
+    - 0.3 * sm(0.8, 0.95, p)
+    - 0.4 * sm(0.95, 1.0, p);
 
   const breathArc = 0.2
     + 0.2 * sm(0.05, 0.15, p)
-    + 0.6 * sm(0.15, 0.45, p)
-    + 0.2 * sm(0.45, 0.6, p)
-    - 0.3 * sm(0.7, 0.85, p)
-    - 0.5 * sm(0.88, 1.0, p);
+    + 0.6 * sm(0.15, 0.4, p)
+    + 0.15 * sm(0.4, 0.55, p)
+    - 0.25 * sm(0.65, 0.82, p)
+    - 0.45 * sm(0.85, 1.0, p);
 
-  const stamenArc = 0.4
-    + 0.1 * sm(0.1, 0.25, p)
-    + 0.5 * sm(0.25, 0.5, p)
-    - 0.1 * sm(0.65, 0.8, p)
-    - 0.3 * sm(0.85, 1.0, p);
+  const branchArc = 0.4
+    + 0.1  * sm(0.1, 0.25, p)
+    + 0.45 * sm(0.25, 0.5, p)
+    - 0.1  * sm(0.65, 0.8, p)
+    - 0.3  * sm(0.85, 1.0, p);
 
   const rotArc = 0.3
     + 0.2 * sm(0.1, 0.3, p)
@@ -479,11 +510,11 @@ function storyArc(progress) {
     - 0.4 * sm(0.88, 1.0, p);
 
   return {
-    uUnfurl:     Math.max(0.1, unfurlArc),
-    uPondRipple: Math.max(0.1, pondArc),
-    uBreath:     Math.max(0.05, breathArc),
-    uStamen:     Math.max(0.2, stamenArc),
-    rot:         Math.max(0.1, rotArc)
+    uBloom:  Math.max(0.1, bloomArc),
+    uFall:   Math.max(0.05, fallArc),
+    uBreath: Math.max(0.05, breathArc),
+    uBranch: Math.max(0.2, branchArc),
+    rot:     Math.max(0.1, rotArc)
   };
 }
 
@@ -492,10 +523,10 @@ const clock = new THREE.Clock();
 
 const DRIFT_BASE = 240;
 const driftCycles = {
-  uUnfurl:     { period: DRIFT_BASE * 1.000, depth: 0.30 },
-  uPondRipple: { period: DRIFT_BASE * 0.786, depth: 0.35 },
-  uBreath:     { period: DRIFT_BASE * 1.272, depth: 0.25 },
-  uStamen:     { period: DRIFT_BASE * 0.618, depth: 0.20 },
+  uBloom:  { period: DRIFT_BASE * 1.000, depth: 0.30 },
+  uFall:   { period: DRIFT_BASE * 0.786, depth: 0.35 },
+  uBreath: { period: DRIFT_BASE * 1.272, depth: 0.25 },
+  uBranch: { period: DRIFT_BASE * 0.618, depth: 0.20 },
 };
 
 function animate() {
@@ -504,22 +535,22 @@ function animate() {
   const elapsed = clock.getElapsedTime();
   uniforms.uTime.value = elapsed;
 
-  // Narrative arc (shaped by Root Memory)
-  let arcMult = { uUnfurl: 1, uPondRipple: 1, uBreath: 1, uStamen: 1, rot: 1 };
+  // Narrative arc (shaped by Mono no Aware)
+  let arcMult = { uBloom: 1, uFall: 1, uBreath: 1, uBranch: 1, rot: 1 };
   if (audioDuration > 0 && audioStartTime > 0) {
     const songElapsed = audioContext.currentTime - audioStartTime;
     const progress = Math.min(songElapsed / audioDuration, 1.0);
     const rawArc = storyArc(progress);
     for (const k in rawArc) {
-      arcMult[k] = 1.0 + (rawArc[k] - 1.0) * bakedRootMem;
+      arcMult[k] = 1.0 + (rawArc[k] - 1.0) * bakedAware;
     }
   }
 
-  // Slow drift (scaled by Pollen)
+  // Slow drift (scaled by Kaze / wind)
   const TWO_PI = Math.PI * 2;
   for (const key in driftCycles) {
     const { period, depth } = driftCycles[key];
-    const scaledDepth = depth * (0.3 + bakedPollen * 1.4);
+    const scaledDepth = depth * (0.3 + bakedKaze * 1.4);
     const phase1 = Math.sin(elapsed * TWO_PI / period);
     const phase2 = Math.sin(elapsed * TWO_PI / (period * 2.17) + 1.3);
     const drift = (phase1 * 0.65 + phase2 * 0.35) * scaledDepth;
@@ -538,7 +569,7 @@ function animate() {
     }
   }
 
-  // Gentle rotation — lotus turns slowly on the water
+  // Rotation — cherry tree turning gently in the wind
   particles.rotation.y = elapsed * rotSpeedY * (arcMult.rot || 1) * (1.0 + rotDrift);
   particles.rotation.x = elapsed * rotSpeedX * (arcMult.rot || 1) * (1.0 + tiltDrift);
 
@@ -552,10 +583,10 @@ window.SCENE = {
   get seedCenter() { return seedCenter; },
   get rotSpeedY() { return rotSpeedY; },
   get rotSpeedX() { return rotSpeedX; },
-  get bakedArcScale() { return bakedRootMem; },
-  get bakedDriftScale() { return bakedPollen; },
+  get bakedArcScale() { return bakedAware; },
+  get bakedDriftScale() { return bakedKaze; },
   driftCycles, DRIFT_BASE,
-  uniformMap: { uUnfurl:'uUnfurl', uPondRipple:'uPondRipple', uBreath:'uBreath', uStamen:'uStamen' },
+  uniformMap: { uBloom:'uBloom', uFall:'uFall', uBreath:'uBreath', uBranch:'uBranch' },
   rotXMult: 1.0, rotDriftScale: 0.08, tiltDriftScale: 0.04,
   storyArc,
   get currentBuffer() { return currentBuffer; },
@@ -563,7 +594,7 @@ window.SCENE = {
   get audioContext() { return audioContext; },
   get analyser() { return analyser; },
   get playState() { return playState; },
-  sceneName: 'lotus'
+  sceneName: 'sakura'
 };
 
 animate();

@@ -130,14 +130,28 @@ const uniforms = {
 
 const sliders = {}, valDisplays = {};
 for (let i = 1; i <= 8; i++) { const k = 'p' + i; sliders[k] = document.getElementById(k); valDisplays[k] = document.getElementById(k + '-val'); }
-function randomizeSliders() { Object.keys(sliders).forEach(k => { const s = sliders[k]; const v = Math.floor(+s.min + Math.random() * (+s.max - +s.min)); s.value = v; valDisplays[k].textContent = v; }); }
-Object.keys(sliders).forEach(k => { sliders[k].addEventListener('input', () => { valDisplays[k].textContent = sliders[k].value; }); });
+function whisperLegacyValue(raw) {
+  return 40 + (raw / 80) * 60;
+}
+function updateSliderDisplay(key) {
+  const raw = +sliders[key].value;
+  valDisplays[key].textContent = key === 'p1' ? Math.round((raw / 80) * 100) : raw;
+}
+function randomizeSliders() {
+  Object.keys(sliders).forEach(k => {
+    const s = sliders[k];
+    const v = Math.floor(+s.min + Math.random() * (+s.max - +s.min));
+    s.value = v;
+    updateSliderDisplay(k);
+  });
+}
+Object.keys(sliders).forEach(k => { sliders[k].addEventListener('input', () => { updateSliderDisplay(k); }); });
 randomizeSliders();
 const randomizeBtn = document.getElementById('randomize-btn');
 if (randomizeBtn) randomizeBtn.addEventListener('click', randomizeSliders);
 
 function computeSeedValues() {
-  const whisper = sliders.p1.value / 100, frost = sliders.p2.value / 100, brittleness = sliders.p3.value / 100, echo = sliders.p4.value / 100;
+  const whisper = whisperLegacyValue(+sliders.p1.value) / 100, frost = sliders.p2.value / 100, brittleness = sliders.p3.value / 100, echo = sliders.p4.value / 100;
   return {
     whisper: 0.1 + whisper * 0.9, frost: 0.1 + frost * 0.9, brittleness: brittleness, echo: 0.1 + echo * 0.9,
     rotSpeedY: 0.002 + frost * 0.005, rotSpeedX: 0.001 + frost * 0.003, smoothing: 0.96 - whisper * 0.08, detail: Math.floor(4 + whisper * 8),

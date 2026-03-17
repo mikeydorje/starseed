@@ -29,8 +29,9 @@
   box.id = 'info-box';
   box.innerHTML = `
     <button class="ib-close" title="Close">&times;</button>
-    <p>Hit <strong>⏺︎ Record</strong> to render video in <strong>16:9</strong>, <strong>1:1</strong>, or <strong>9:16</strong>. The visuals are boundary-aware — they adapt to any aspect ratio and screen size, so each format has its own character. Try resizing your browser to see.</p>
-    <p>Each render also varies slightly due to background drift cycles, so no two captures are exactly the same — even with identical settings.</p>
+    <p>Hit <strong>⏺︎ Record</strong> to render video in <strong>16:9</strong>, <strong>1:1</strong>, or <strong>9:16</strong>. The visuals are boundary-aware; they adapt to any aspect ratio and screen size, so each format has its own character.</p>
+    <p>Each render also varies slightly due to background drift cycles, so no two captures are exactly the same, even with identical settings.</p>
+    <p><strong>Aperture Scale</strong> reframes the composition by adjusting the field of view for each format. It applies to both the live preview and the recorded capture.</p>
     <div class="ib-footer"><label><input type="checkbox" id="ib-dismiss"/>Don't show again</label></div>
   `;
   document.body.appendChild(box);

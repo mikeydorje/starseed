@@ -1,30 +1,35 @@
-// --- When You Sleep: Submerged Volume ---
-// Pure random 3D volume. Large soft spheres sinking slowly as if
-// suspended underwater. Bioluminescent pulses from deep indigo,
-// pink blooms drift upward through the pressure. No center.
+// --- To Here Knows When: Dissolving Haze Bands ---
+// No center. Horizontal cloud layers phasing through each other.
+// Reverb trails smear across time. Soft-focus gradient fields that
+// dissolve and reform. Lavender and silver, drifting into formlessness.
 
 const vertexShader = `
   uniform float uFrequencyData[64];
   uniform float uTime;
-  uniform float uSubmersion;
-  uniform float uBioluminescence;
-  uniform float uCurrent;
-  uniform float uWeight;
+  uniform float uDissolve;
+  uniform float uReverbField;
+  uniform float uSoftFocus;
+  uniform float uDetuning;
+  uniform float uBandShift;
+  uniform float uGravityShift;
   uniform float uThreshold;
   uniform vec2 uViewport;
-  attribute float aNode;
+  attribute float aBand;
+  attribute float aAlong;
   attribute float aPhase;
   attribute float aSize;
-  attribute float aDepth;
-  varying float vNode;
+  varying float vBand;
   varying float vFreqAmp;
   varying float vPhase;
-  varying float vGlow;
+  varying float vHaze;
   const float VIS_INPUT_GAIN = 0.50118723; // -6 dB visual attenuation
 
   void main() {
-    int idx = int(clamp(floor(aNode * 63.0), 0.0, 63.0));
-    int idx2 = int(clamp(floor(aPhase / 6.283 * 63.0), 0.0, 63.0));
+    // Circular frequency-bin remap — migrates the energy hotspot vertically
+    float shiftedBand  = fract(aBand + uGravityShift);
+    float shiftedAlong = fract(aAlong + uGravityShift * 0.73);
+    int idx  = int(clamp(floor(shiftedBand  * 63.0), 0.0, 63.0));
+    int idx2 = int(clamp(floor(shiftedAlong * 63.0), 0.0, 63.0));
     float amp = uFrequencyData[idx] / 255.0;
     float amp2 = uFrequencyData[idx2] / 255.0;
 
@@ -32,30 +37,34 @@ const vertexShader = `
     float gAmp = (max(amp - gate, 0.0) / max(1.0 - gate, 0.01)) * VIS_INPUT_GAIN;
     float gAmp2 = (max(amp2 - gate, 0.0) / max(1.0 - gate, 0.01)) * VIS_INPUT_GAIN;
 
-    // Submersion: sinking drift — slow downward movement
-    float sink = sin(uTime * 0.008 + aPhase * 2.0) * uSubmersion * 0.12;
-    float sinkY = cos(uTime * 0.005 + aNode * 3.0) * uWeight * 0.08;
+    // Dissolve: particles scatter from their band — structure melting
+    float scatter = sin(aPhase * 7.0 + uTime * 0.02 + aBand * 5.0) * uDissolve * 0.3 * gAmp;
+    float scatterY = cos(aPhase * 3.0 + uTime * 0.015) * uDissolve * 0.15 * gAmp2;
 
-    // Bioluminescence: audio-reactive expansion pulses
-    float pulse = gAmp * uBioluminescence * 0.25 * sin(uTime * 0.015 + aPhase);
+    // Reverb field: echo trails — position smears based on recent energy
+    float trail = sin(uTime * 0.01 + aAlong * 4.0 + aBand * 2.0) * uReverbField * 0.2;
+    float trailZ = cos(uTime * 0.008 + aPhase * 2.0) * uReverbField * 0.15 * gAmp;
 
-    // Current: lateral drift — water movement
-    float drift = sin(uTime * 0.01 + aDepth * 4.0 + aNode * 2.0) * uCurrent * 0.2;
-    float driftZ = cos(uTime * 0.007 + aPhase * 1.5) * uCurrent * 0.1;
+    // Detuning: two copies slightly apart — slow pitch drift
+    float detune = sin(uTime * 0.006 + aBand * 3.0) * uDetuning * 0.15;
+
+    // Bottom-band drift: weight follows shifted energy center
+    float bottomWeight = (1.0 - shiftedBand);
+    float bandDrift = bottomWeight * bottomWeight * uBandShift;
 
     vec3 newPos = position;
-    newPos.x += drift + pulse;
-    newPos.y += sink - sinkY + gAmp2 * uBioluminescence * 0.1;
-    newPos.z += driftZ;
+    newPos.x += scatter + trail + detune + bandDrift * 0.4 * sin(uTime * 0.009 + aPhase);
+    newPos.y += scatterY + sin(uTime * 0.01 + aAlong * 2.0) * 0.05 + bandDrift;
+    newPos.z += trailZ + bandDrift * 0.25 * cos(uTime * 0.007 + aBand * 3.0);
 
-    vNode = aNode;
+    vBand = aBand;
     vFreqAmp = gAmp;
     vPhase = aPhase;
-    vGlow = gAmp * uBioluminescence * 0.6 + pulse * 0.4;
+    vHaze = gAmp * uReverbField * 0.5 + scatter * 0.3;
 
     vec4 mvPos = modelViewMatrix * vec4(newPos, 1.0);
-    // Very large — creates overlapping underwater light volumes
-    gl_PointSize = aSize * (4.5 + gAmp * 5.5 + uBioluminescence * 2.5 + gAmp2 * 1.5) * (300.0 / -mvPos.z);
+    // Very large soft points — overlapping creates haze layers
+    gl_PointSize = aSize * (4.0 + gAmp * 6.0 + uSoftFocus * 3.0) * (300.0 / -mvPos.z);
 
     vec4 clipPos = projectionMatrix * mvPos;
     vec2 ndc = clipPos.xy / clipPos.w;
@@ -70,11 +79,11 @@ const vertexShader = `
 `;
 
 const fragmentShader = `
-  varying float vNode;
+  varying float vBand;
   varying float vFreqAmp;
   varying float vPhase;
-  varying float vGlow;
-  uniform float uHiss;
+  varying float vHaze;
+  uniform float uHaze;
   uniform float uTime;
 
   float hash(vec2 p) {
@@ -84,33 +93,33 @@ const fragmentShader = `
   void main() {
     float dist = length(gl_PointCoord - vec2(0.5));
     if (dist > 0.5) discard;
-    // Gaussian-like soft falloff for underwater light scatter
-    float alpha = exp(-dist * dist * 7.0);
+    // Ultra-soft gaussian-like profile
+    float alpha = exp(-dist * dist * 8.0);
 
-    // Slow colour phase — deep indigo through bioluminescent pink
-    float phase = uTime * 0.005 + vNode * 2.5 + vPhase * 0.15;
-    vec3 abyss = vec3(0.04, 0.02, 0.12);
-    vec3 indigo = vec3(0.12, 0.06, 0.35);
-    vec3 pink = vec3(0.6, 0.15, 0.45);
-    vec3 glow = vec3(0.85, 0.55, 0.75);
+    // Slow colour phase — lavender through silver
+    float phase = uTime * 0.006 + vBand * 3.0 + vPhase * 0.2;
+    vec3 deep = vec3(0.15, 0.1, 0.25);
+    vec3 lavender = vec3(0.55, 0.4, 0.65);
+    vec3 silver = vec3(0.75, 0.72, 0.82);
+    vec3 white = vec3(0.92, 0.9, 0.97);
 
     float grad = sin(phase) * 0.5 + 0.5;
-    vec3 color = mix(abyss, indigo, 0.3 + grad * 0.4);
-    color = mix(color, pink, vGlow * 0.5 + vFreqAmp * 0.25);
-    color = mix(color, glow, vFreqAmp * vFreqAmp * 0.4);
+    vec3 color = mix(deep, lavender, grad * 0.5 + vFreqAmp * 0.3);
+    color = mix(color, silver, vHaze * 0.4 + vFreqAmp * 0.3);
+    color = mix(color, white, vFreqAmp * vFreqAmp * 0.3);
 
-    // Underwater grain — very fine
-    float grain = hash(gl_FragCoord.xy + uTime * 2.0) * uHiss * 0.04;
+    // Haze grain
+    float grain = hash(gl_FragCoord.xy + uTime * 3.0) * uHaze * 0.06;
     color += grain;
 
-    alpha *= 0.18 + vFreqAmp * 0.35 + vGlow * 0.12;
+    alpha *= 0.15 + vFreqAmp * 0.35 + vHaze * 0.1;
     gl_FragColor = vec4(color, alpha);
   }
 `;
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 100);
-camera.position.set(0, 0, 5.5);
+const camera = new THREE.PerspectiveCamera(41, innerWidth / innerHeight, 0.1, 100);
+camera.position.set(0, 0, 6.9);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(devicePixelRatio);
@@ -119,8 +128,8 @@ document.body.appendChild(renderer.domElement);
 const frequencyUniform = new Float32Array(64);
 const uniforms = {
   uFrequencyData: { value: frequencyUniform }, uTime: { value: 0 },
-  uSubmersion: { value: 0.5 }, uBioluminescence: { value: 0.5 }, uCurrent: { value: 0.5 }, uWeight: { value: 0.5 },
-  uHiss: { value: 0.5 }, uThreshold: { value: 0.5 },
+  uDissolve: { value: 0.5 }, uReverbField: { value: 0.5 }, uSoftFocus: { value: 0.5 }, uDetuning: { value: 0.5 },
+  uHaze: { value: 0.5 }, uBandShift: { value: 0 }, uGravityShift: { value: 0 }, uThreshold: { value: 0.5 },
   uViewport: { value: new THREE.Vector2(innerWidth, innerHeight) }
 };
 
@@ -133,47 +142,55 @@ const randomizeBtn = document.getElementById('randomize-btn');
 if (randomizeBtn) randomizeBtn.addEventListener('click', randomizeSliders);
 
 function computeSeedValues() {
-  const submersion = sliders.p1.value / 100, bioluminescence = sliders.p2.value / 100, current = sliders.p3.value / 100, weight = sliders.p4.value / 100;
+  const dissolve = sliders.p1.value / 100, reverbField = sliders.p2.value / 100, softFocus = sliders.p3.value / 100, detuning = sliders.p4.value / 100;
   return {
-    submersion: 0.1 + submersion * 0.9, bioluminescence: 0.1 + bioluminescence * 0.9, current: current, weight: 0.1 + weight * 0.9,
-    rotSpeedY: 0.002 + current * 0.006, rotSpeedX: 0.001 + current * 0.003, smoothing: 0.97 - submersion * 0.1, detail: Math.floor(8 + submersion * 20),
-    hiss: sliders.p5.value / 100, epoch: sliders.p6.value / 100, threshold: sliders.p7.value / 100, flux: sliders.p8.value / 100
+    dissolve: 0.1 + dissolve * 0.9, reverbField: 0.1 + reverbField * 0.9, softFocus: softFocus, detuning: 0.1 + detuning * 0.9,
+    rotSpeedY: 0.002 + reverbField * 0.008, rotSpeedX: 0.001 + reverbField * 0.004, smoothing: 0.97 - dissolve * 0.12, detail: Math.floor(8 + dissolve * 24),
+    haze: sliders.p5.value / 100, epoch: sliders.p6.value / 100, threshold: sliders.p7.value / 100, flux: sliders.p8.value / 100
   };
 }
 
-// --- Pure random 3D volume (no center, no structure) ---
+// --- Horizontal haze bands (decentralized layers) ---
 let particles;
 function buildParticles(detail) {
   if (particles) { scene.remove(particles); particles.geometry.dispose(); }
 
-  const count = Math.floor(60 + detail * 5);
-  const positions = [], nodeAttrs = [], phaseAttrs = [], sizeAttrs = [], depthAttrs = [];
+  const bands = Math.floor(8 + detail * 0.3);
+  const positions = [], bandAttrs = [], alongAttrs = [], phaseAttrs = [], sizeAttrs = [];
 
-  for (let i = 0; i < count; i++) {
-    // Random distribution in a volume — no center bias
-    const x = (Math.random() - 0.5) * 6.0;
-    const y = (Math.random() - 0.5) * 4.5;
-    const z = (Math.random() - 0.5) * 3.5;
-    positions.push(x, y, z);
-    nodeAttrs.push(Math.random());
-    phaseAttrs.push(Math.random() * Math.PI * 2);
-    sizeAttrs.push(0.5 + Math.random() * 1.0);
-    depthAttrs.push((z + 1.75) / 3.5);
+  for (let b = 0; b < bands; b++) {
+    const bandNorm = b / (bands - 1);
+    // Bands distributed across Y — no center bias
+    const baseY = (bandNorm - 0.5) * 4.5 + Math.sin(b * 2.39) * 0.3;
+    const bandZ = Math.sin(b * 1.618) * 0.8;
+    const ptsPerBand = Math.floor(10 + detail * 0.5);
+
+    for (let p = 0; p < ptsPerBand; p++) {
+      const along = p / (ptsPerBand - 1);
+      const x = (along - 0.5) * 6.0 + (Math.random() - 0.5) * 0.8;
+      const y = baseY + (Math.random() - 0.5) * 0.6;
+      const z = bandZ + (Math.random() - 0.5) * 0.5;
+      positions.push(x, y, z);
+      bandAttrs.push(bandNorm);
+      alongAttrs.push(along);
+      phaseAttrs.push(Math.random() * Math.PI * 2);
+      sizeAttrs.push(0.6 + Math.random() * 0.9);
+    }
   }
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  geo.setAttribute('aNode', new THREE.Float32BufferAttribute(nodeAttrs, 1));
+  geo.setAttribute('aBand', new THREE.Float32BufferAttribute(bandAttrs, 1));
+  geo.setAttribute('aAlong', new THREE.Float32BufferAttribute(alongAttrs, 1));
   geo.setAttribute('aPhase', new THREE.Float32BufferAttribute(phaseAttrs, 1));
   geo.setAttribute('aSize', new THREE.Float32BufferAttribute(sizeAttrs, 1));
-  geo.setAttribute('aDepth', new THREE.Float32BufferAttribute(depthAttrs, 1));
   particles = new THREE.Points(geo, new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
   scene.add(particles);
 }
-buildParticles(16);
+buildParticles(18);
 
-let rotSpeedY = 0.003, rotSpeedX = 0.002, bakedEpoch = 0.5, bakedFlux = 0.5;
-let seedCenter = { submersion: 0.5, bioluminescence: 0.5, current: 0.5, weight: 0.5 };
+let rotSpeedY = 0.004, rotSpeedX = 0.002, bakedEpoch = 0.5, bakedFlux = 0.5;
+let seedCenter = { dissolve: 0.5, reverbField: 0.5, softFocus: 0.5, detuning: 0.5 };
 let audioContext, analyser, dataArray, source, audioDuration = 0, audioStartTime = 0;
 function initAudio(sm) { audioContext = new (window.AudioContext || window.webkitAudioContext)(); analyser = audioContext.createAnalyser(); analyser.fftSize = 128; analyser.smoothingTimeConstant = sm; dataArray = new Uint8Array(analyser.frequencyBinCount); }
 
@@ -192,11 +209,11 @@ playBtn.addEventListener('click', () => {
   if (!currentBuffer) return;
   const s = computeSeedValues();
   controlsEl.classList.add('hidden'); controlsEl.classList.remove('visible');
-  uniforms.uSubmersion.value = s.submersion; uniforms.uBioluminescence.value = s.bioluminescence;
-  uniforms.uCurrent.value = s.current; uniforms.uWeight.value = s.weight;
-  uniforms.uHiss.value = s.hiss; uniforms.uThreshold.value = s.threshold;
+  uniforms.uDissolve.value = s.dissolve; uniforms.uReverbField.value = s.reverbField;
+  uniforms.uSoftFocus.value = s.softFocus; uniforms.uDetuning.value = s.detuning;
+  uniforms.uHaze.value = s.haze; uniforms.uThreshold.value = s.threshold;
   rotSpeedY = s.rotSpeedY; rotSpeedX = s.rotSpeedX;
-  seedCenter = { submersion: s.submersion, bioluminescence: s.bioluminescence, current: s.current, weight: s.weight };
+  seedCenter = { dissolve: s.dissolve, reverbField: s.reverbField, softFocus: s.softFocus, detuning: s.detuning };
   bakedEpoch = s.epoch; bakedFlux = s.flux;
   buildParticles(s.detail); analyser.smoothingTimeConstant = s.smoothing;
   if (playState === 'paused') { audioContext.resume(); playState = 'playing'; return; }
@@ -215,33 +232,41 @@ function storyArc(p) {
   p = Math.max(0, Math.min(1, p));
   const sm = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
   return {
-    submersion:       Math.max(0.05, 0.3 + 0.15 * sm(0, 0.15, p) + 0.4 * sm(0.15, 0.5, p) - 0.1 * sm(0.65, 0.85, p) - 0.3 * sm(0.88, 1, p)),
-    bioluminescence:  Math.max(0.05, 0.15 + 0.25 * sm(0.05, 0.2, p) + 0.55 * sm(0.2, 0.45, p) - 0.2 * sm(0.6, 0.8, p) - 0.35 * sm(0.85, 1, p)),
-    current:          Math.max(0.05, 0.2 + 0.15 * sm(0.1, 0.25, p) + 0.45 * sm(0.25, 0.55, p) - 0.15 * sm(0.65, 0.8, p) - 0.3 * sm(0.85, 1, p)),
-    weight:           Math.max(0.05, 0.2 + 0.2 * sm(0.1, 0.25, p) + 0.45 * sm(0.25, 0.5, p) - 0.15 * sm(0.6, 0.78, p) - 0.35 * sm(0.82, 1, p)),
+    dissolve:    Math.max(0.05, 0.25 + 0.2 * sm(0, 0.15, p) + 0.45 * sm(0.15, 0.5, p) - 0.15 * sm(0.65, 0.85, p) - 0.35 * sm(0.88, 1, p)),
+    reverbField: Math.max(0.05, 0.15 + 0.3 * sm(0.05, 0.2, p) + 0.5 * sm(0.2, 0.45, p) - 0.2 * sm(0.6, 0.8, p) - 0.35 * sm(0.85, 1, p)),
+    softFocus:   Math.max(0.05, 0.2 + 0.15 * sm(0.1, 0.25, p) + 0.5 * sm(0.25, 0.55, p) - 0.15 * sm(0.65, 0.8, p) - 0.3 * sm(0.85, 1, p)),
+    detuning:    Math.max(0.05, 0.2 + 0.2 * sm(0.1, 0.25, p) + 0.5 * sm(0.25, 0.5, p) - 0.15 * sm(0.6, 0.78, p) - 0.35 * sm(0.82, 1, p)),
     rot: Math.max(0.1, 0.3 + 0.15 * sm(0.1, 0.3, p) + 0.4 * sm(0.3, 0.6, p) - 0.15 * sm(0.7, 0.85, p) - 0.3 * sm(0.88, 1, p))
   };
 }
 
-const clock = new THREE.Clock(), DRIFT_BASE = 260;
-const driftCycles = { submersion: { period: DRIFT_BASE, depth: 0.3 }, bioluminescence: { period: DRIFT_BASE * 0.786, depth: 0.35 }, current: { period: DRIFT_BASE * 1.272, depth: 0.2 }, weight: { period: DRIFT_BASE * 0.618, depth: 0.25 } };
-const uMap = { submersion: 'uSubmersion', bioluminescence: 'uBioluminescence', current: 'uCurrent', weight: 'uWeight' };
+const clock = new THREE.Clock(), DRIFT_BASE = 240;
+const driftCycles = { dissolve: { period: DRIFT_BASE, depth: 0.3 }, reverbField: { period: DRIFT_BASE * 0.786, depth: 0.35 }, softFocus: { period: DRIFT_BASE * 1.272, depth: 0.2 }, detuning: { period: DRIFT_BASE * 0.618, depth: 0.3 } };
+const uMap = { dissolve: 'uDissolve', reverbField: 'uReverbField', softFocus: 'uSoftFocus', detuning: 'uDetuning' };
 
 function animate() {
   requestAnimationFrame(animate);
   const elapsed = clock.getElapsedTime(); uniforms.uTime.value = elapsed;
-  let arc = { submersion: 1, bioluminescence: 1, current: 1, weight: 1, rot: 1 };
+  let arc = { dissolve: 1, reverbField: 1, softFocus: 1, detuning: 1, rot: 1 };
   if (audioDuration > 0 && audioStartTime > 0) { const pr = Math.min((audioContext.currentTime - audioStartTime) / audioDuration, 1); const raw = storyArc(pr); for (const k in raw) arc[k] = 1 + (raw[k] - 1) * bakedEpoch; }
   const TP = Math.PI * 2;
   for (const k in driftCycles) { const { period, depth } = driftCycles[k]; const sd = depth * (0.3 + bakedFlux * 1.4); const d = (Math.sin(elapsed * TP / period) * 0.65 + Math.sin(elapsed * TP / (period * 2.17) + 1.3) * 0.35) * sd; uniforms[uMap[k]].value = Math.max(0.01, seedCenter[k] * (arc[k] || 1) * (1 + d)); }
   if (analyser && dataArray) { analyser.getByteFrequencyData(dataArray); for (let i = 0; i < 64; i++) frequencyUniform[i] = dataArray[i]; }
-  const driftAmt = 0.04 * (0.4 + bakedFlux * 0.7);
-  particles.position.x = Math.sin(elapsed * TP / (DRIFT_BASE * 2.5)) * driftAmt;
-  particles.position.y = Math.sin(elapsed * TP / (DRIFT_BASE * 2.0) + 1.7) * driftAmt * 0.5;
-  const breathe = 1.0 + Math.sin(elapsed * TP / (DRIFT_BASE * 3.0)) * 0.03 * (arc.rot || 1);
+  const driftAmt = 0.05 * (0.4 + bakedFlux * 0.8);
+  particles.position.x = Math.sin(elapsed * TP / (DRIFT_BASE * 2.2)) * driftAmt;
+  particles.position.y = Math.sin(elapsed * TP / (DRIFT_BASE * 1.8) + 1.7) * driftAmt * 0.6;
+  const bandShiftAmt = 1.2 * (0.3 + bakedFlux * 1.4);
+  uniforms.uBandShift.value = (Math.sin(elapsed * TP / (DRIFT_BASE * 0.92)) * 0.6 + Math.sin(elapsed * TP / (DRIFT_BASE * 1.73) + 2.1) * 0.4) * bandShiftAmt;
+  // Gravity shift: slowly migrate the energy hotspot vertically
+  let gravBase = (Math.sin(elapsed * TP / (DRIFT_BASE * 1.37)) * 0.5 + Math.sin(elapsed * TP / (DRIFT_BASE * 0.61) + 0.9) * 0.3 + Math.sin(elapsed * TP / (DRIFT_BASE * 3.14) + 2.6) * 0.2);
+  // Audio-reactive nudge: bass energy gently accelerates the shift
+  let bassNudge = 0;
+  if (analyser && dataArray) { for (let i = 0; i < 8; i++) bassNudge += frequencyUniform[i]; bassNudge = (bassNudge / (8 * 255)) * 0.12; }
+  uniforms.uGravityShift.value = gravBase * (0.25 + bakedFlux * 0.35) + bassNudge;
+  const breathe = 1.0 + Math.sin(elapsed * TP / (DRIFT_BASE * 2.8)) * 0.04 * (arc.rot || 1);
   particles.scale.setScalar(breathe);
-  particles.rotation.y = elapsed * rotSpeedY * (arc.rot || 1) * 0.08;
-  particles.rotation.x = elapsed * rotSpeedX * 0.15 * (arc.rot || 1) * 0.08;
+  particles.rotation.y = elapsed * rotSpeedY * (arc.rot || 1) * 0.1;
+  particles.rotation.x = elapsed * rotSpeedX * 0.2 * (arc.rot || 1) * 0.1;
   renderer.render(scene, camera);
 }
 
@@ -254,6 +279,6 @@ window.SCENE = {
   rotXMult: 0.02, rotDriftScale: 0, tiltDriftScale: 0, storyArc,
   get currentBuffer() { return currentBuffer; }, get audioDuration() { return audioDuration; },
   get audioContext() { return audioContext; }, get analyser() { return analyser; },
-  get playState() { return playState; }, sceneName: 'when-you-sleep'
+  get playState() { return playState; }, sceneName: 'wip'
 };
 animate();
