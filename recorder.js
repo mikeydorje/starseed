@@ -256,19 +256,36 @@ const Recorder = (() => {
     }
   }
 
-  // ===== Encode original audio into muxer =====
-  // Returns true if audio was encoded, false if skipped/failed.
-  async function encodeAudio(buffer, muxer) {
-    // Validate codec support before attempting encode
+  // ===== Pre-encode audio into an array of serialized chunks =====
+  // Returns { chunks, sampleRate, numberOfChannels } or null on failure.
+  // Chunks are serialized (Uint8Array + metadata) so we can control timestamps
+  // and add them to the muxer via addAudioChunkRaw for iOS compatibility.
+  async function preEncodeAudio(buffer) {
     const supported = await isAudioEncoderSupported(buffer);
     if (!supported) {
-      console.warn('AudioEncoder: mp4a.40.2 not supported on this browser — video will have no audio');
-      return false;
+      console.warn('AudioEncoder: mp4a.40.2 not supported — video will have no audio');
+      return null;
     }
 
     let encodeError = null;
+    const chunks = [];
+
     const encoder = new AudioEncoder({
-      output: (chunk, meta) => muxer.addAudioChunk(chunk, meta),
+      output: (chunk, meta) => {
+        const buf = new Uint8Array(chunk.byteLength);
+        chunk.copyTo(buf);
+        const entry = {
+          data: buf,
+          type: chunk.type,
+          timestamp: chunk.timestamp,
+          duration: chunk.duration,
+        };
+        // Capture decoder config (AudioSpecificConfig) from the first chunk
+        if (meta && meta.decoderConfig) {
+          entry.meta = meta;
+        }
+        chunks.push(entry);
+      },
       error: (e) => { encodeError = e; console.error('AudioEncoder:', e); },
     });
     encoder.configure({
@@ -333,11 +350,24 @@ const Recorder = (() => {
     await encoder.flush();
     encoder.close();
 
-    if (encodeError) {
-      console.warn('AudioEncoder failed during encode — video will have no audio');
-      return false;
+    if (encodeError || chunks.length === 0) {
+      console.warn('Audio encoding failed — video will have no audio');
+      return null;
     }
-    return true;
+
+    // Normalize timestamps so the first chunk starts at exactly 0.
+    // AAC encoders add priming delay (~2048 samples) which offsets output timestamps.
+    // Desktop players compensate; iOS/Safari does not — causing silent audio tracks.
+    const t0 = chunks[0].timestamp;
+    if (t0 !== 0) {
+      for (const c of chunks) c.timestamp -= t0;
+    }
+
+    return {
+      chunks,
+      sampleRate: buffer.sampleRate,
+      numberOfChannels: buffer.numberOfChannels,
+    };
   }
 
   // ===== Record one aspect ratio → MP4 Blob =====
@@ -347,8 +377,9 @@ const Recorder = (() => {
     const { width, height } = fmt;
     const totalFrames = frameData.length;
 
-    // Pre-check audio support so we can configure the muxer correctly
-    const audioSupported = await isAudioEncoderSupported(audioBuffer);
+    // Pre-encode audio before the expensive video render so failures surface early.
+    // This also lets us normalize timestamps for iOS/Safari compatibility.
+    const audioResult = await preEncodeAudio(audioBuffer);
 
     const target = new ArrayBufferTarget();
     const muxerOpts = {
@@ -356,11 +387,11 @@ const Recorder = (() => {
       video: { codec: 'avc', width, height },
       fastStart: 'in-memory',
     };
-    if (audioSupported) {
+    if (audioResult) {
       muxerOpts.audio = {
         codec: 'aac',
-        sampleRate: audioBuffer.sampleRate,
-        numberOfChannels: audioBuffer.numberOfChannels,
+        sampleRate: audioResult.sampleRate,
+        numberOfChannels: audioResult.numberOfChannels,
       };
     }
     const muxer = new Muxer(muxerOpts);
@@ -423,15 +454,16 @@ const Recorder = (() => {
       return null;
     }
 
-    // Encode & mux audio (if supported)
-    let hasAudio = false;
-    if (audioSupported) {
-      hasAudio = await encodeAudio(audioBuffer, muxer);
+    // Add pre-encoded audio chunks with normalized timestamps
+    if (audioResult) {
+      for (const c of audioResult.chunks) {
+        muxer.addAudioChunkRaw(c.data, c.type, c.timestamp, c.duration, c.meta);
+      }
     }
 
     muxer.finalize();
     const blob = new Blob([target.buffer], { type: 'video/mp4' });
-    blob._hasAudio = hasAudio;
+    blob._hasAudio = !!audioResult;
 
     setup.renderer.forceContextLoss();
     setup.renderer.dispose();
