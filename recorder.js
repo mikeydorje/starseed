@@ -280,9 +280,20 @@ const Recorder = (() => {
           timestamp: chunk.timestamp,
           duration: chunk.duration,
         };
-        // Capture decoder config (AudioSpecificConfig) from the first chunk
+        // Deep-clone decoder config — the description ArrayBuffer gets neutered
+        // after this callback returns, so we must copy it now
         if (meta && meta.decoderConfig) {
-          entry.meta = meta;
+          const dc = meta.decoderConfig;
+          entry.meta = {
+            decoderConfig: {
+              codec: dc.codec,
+              sampleRate: dc.sampleRate,
+              numberOfChannels: dc.numberOfChannels,
+              description: dc.description
+                ? dc.description.slice(0)
+                : undefined,
+            },
+          };
         }
         chunks.push(entry);
       },
@@ -457,7 +468,16 @@ const Recorder = (() => {
     // Add pre-encoded audio chunks with normalized timestamps
     if (audioResult) {
       for (const c of audioResult.chunks) {
-        muxer.addAudioChunkRaw(c.data, c.type, c.timestamp, c.duration, c.meta);
+        // Reconstruct proper EncodedAudioChunk so addAudioChunk handles
+        // all container metadata (AudioSpecificConfig) correctly
+        const rechunk = new EncodedAudioChunk({
+          type: c.type,
+          timestamp: c.timestamp,
+          duration: c.duration,
+          data: c.data,
+        });
+        muxer.addAudioChunk(rechunk, c.meta || undefined);
+        rechunk.close();
       }
     }
 
