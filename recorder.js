@@ -241,11 +241,35 @@ const Recorder = (() => {
     setup.particles.rotation.x = time * config.rotSpeedX * config.rotXMult * (arcMult.rot || 1) * (1.0 + td);
   }
 
+  // ===== Check if AAC audio encoding is supported =====
+  async function isAudioEncoderSupported(buffer) {
+    try {
+      const probe = await AudioEncoder.isConfigSupported({
+        codec: 'mp4a.40.2',
+        sampleRate: buffer.sampleRate,
+        numberOfChannels: buffer.numberOfChannels,
+        bitrate: AUDIO_BITRATE,
+      });
+      return probe.supported;
+    } catch (e) {
+      return false;
+    }
+  }
+
   // ===== Encode original audio into muxer =====
+  // Returns true if audio was encoded, false if skipped/failed.
   async function encodeAudio(buffer, muxer) {
+    // Validate codec support before attempting encode
+    const supported = await isAudioEncoderSupported(buffer);
+    if (!supported) {
+      console.warn('AudioEncoder: mp4a.40.2 not supported on this browser — video will have no audio');
+      return false;
+    }
+
+    let encodeError = null;
     const encoder = new AudioEncoder({
       output: (chunk, meta) => muxer.addAudioChunk(chunk, meta),
-      error: (e) => console.error('AudioEncoder:', e),
+      error: (e) => { encodeError = e; console.error('AudioEncoder:', e); },
     });
     encoder.configure({
       codec: 'mp4a.40.2',
@@ -255,25 +279,65 @@ const Recorder = (() => {
     });
 
     const CHUNK = 1024;
-    for (let offset = 0; offset < buffer.length; offset += CHUNK) {
-      const size = Math.min(CHUNK, buffer.length - offset);
-      const planar = new Float32Array(size * buffer.numberOfChannels);
+    // Try f32-planar first; fall back to f32 (interleaved) if the browser rejects it
+    let usePlanar = true;
+    try {
+      const testSize = Math.min(CHUNK, buffer.length);
+      const testBuf = new Float32Array(testSize * buffer.numberOfChannels);
       for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
-        planar.set(buffer.getChannelData(ch).subarray(offset, offset + size), ch * size);
+        testBuf.set(buffer.getChannelData(ch).subarray(0, testSize), ch * testSize);
+      }
+      const testData = new AudioData({
+        format: 'f32-planar',
+        sampleRate: buffer.sampleRate,
+        numberOfFrames: testSize,
+        numberOfChannels: buffer.numberOfChannels,
+        timestamp: 0,
+        data: testBuf,
+      });
+      testData.close();
+    } catch (e) {
+      usePlanar = false;
+    }
+
+    for (let offset = 0; offset < buffer.length; offset += CHUNK) {
+      if (encodeError) break;
+      const size = Math.min(CHUNK, buffer.length - offset);
+      let dataBuf, fmt;
+      if (usePlanar) {
+        dataBuf = new Float32Array(size * buffer.numberOfChannels);
+        for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
+          dataBuf.set(buffer.getChannelData(ch).subarray(offset, offset + size), ch * size);
+        }
+        fmt = 'f32-planar';
+      } else {
+        dataBuf = new Float32Array(size * buffer.numberOfChannels);
+        for (let s = 0; s < size; s++) {
+          for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
+            dataBuf[s * buffer.numberOfChannels + ch] = buffer.getChannelData(ch)[offset + s];
+          }
+        }
+        fmt = 'f32';
       }
       const audioData = new AudioData({
-        format: 'f32-planar',
+        format: fmt,
         sampleRate: buffer.sampleRate,
         numberOfFrames: size,
         numberOfChannels: buffer.numberOfChannels,
         timestamp: Math.round(offset / buffer.sampleRate * 1_000_000),
-        data: planar,
+        data: dataBuf,
       });
       encoder.encode(audioData);
       audioData.close();
     }
     await encoder.flush();
     encoder.close();
+
+    if (encodeError) {
+      console.warn('AudioEncoder failed during encode — video will have no audio');
+      return false;
+    }
+    return true;
   }
 
   // ===== Record one aspect ratio → MP4 Blob =====
@@ -283,17 +347,23 @@ const Recorder = (() => {
     const { width, height } = fmt;
     const totalFrames = frameData.length;
 
+    // Pre-check audio support so we can configure the muxer correctly
+    const audioSupported = await isAudioEncoderSupported(audioBuffer);
+
     const target = new ArrayBufferTarget();
-    const muxer = new Muxer({
+    const muxerOpts = {
       target,
       video: { codec: 'avc', width, height },
-      audio: {
+      fastStart: 'in-memory',
+    };
+    if (audioSupported) {
+      muxerOpts.audio = {
         codec: 'aac',
         sampleRate: audioBuffer.sampleRate,
         numberOfChannels: audioBuffer.numberOfChannels,
-      },
-      fastStart: 'in-memory',
-    });
+      };
+    }
+    const muxer = new Muxer(muxerOpts);
 
     // Verify codec support: try High Profile L5.1 → L4.0 → Baseline fallback
     let videoCodec = 'avc1.640033'; // High Profile L5.1
@@ -353,11 +423,15 @@ const Recorder = (() => {
       return null;
     }
 
-    // Encode & mux audio
-    await encodeAudio(audioBuffer, muxer);
+    // Encode & mux audio (if supported)
+    let hasAudio = false;
+    if (audioSupported) {
+      hasAudio = await encodeAudio(audioBuffer, muxer);
+    }
 
     muxer.finalize();
     const blob = new Blob([target.buffer], { type: 'video/mp4' });
+    blob._hasAudio = hasAudio;
 
     setup.renderer.forceContextLoss();
     setup.renderer.dispose();
@@ -690,6 +764,8 @@ const Recorder = (() => {
   let activePreviewFmt = null;
   let _baseFov = null;
   let _resizedDuringPreview = false;
+  let _savedPreviewFmt = null;
+  let _savedBaseFov = null;
 
   function activatePreview(fmt) {
     const S = window.SCENE;
@@ -785,7 +861,9 @@ const Recorder = (() => {
   // ===== Format picker overlay =====
   function openFormatPicker() {
     if (!window.SCENE || !window.SCENE.currentBuffer) return;
-    // Clear any active preview first
+    // Save active preview so we can restore it on close/cancel
+    _savedPreviewFmt = activePreviewFmt;
+    _savedBaseFov = _baseFov;
     if (activePreviewFmt) deactivatePreview();
     recording = true;
     cancelRef = { cancelled: false };
@@ -871,6 +949,14 @@ const Recorder = (() => {
     blobUrls = [];
     setTimeout(() => urls.forEach(u => URL.revokeObjectURL(u)), 30000);
     resetFormatStates();
+
+    // Restore the preview format that was active before the overlay opened
+    if (_savedPreviewFmt) {
+      _baseFov = _savedBaseFov;
+      activatePreview(_savedPreviewFmt);
+      _savedPreviewFmt = null;
+      _savedBaseFov = null;
+    }
   }
 
   function updateCard(name) {
@@ -923,8 +1009,9 @@ const Recorder = (() => {
     } else if (st.state === 'done') {
       status.className = 'rec-format-status visible';
       const sz = st.blob ? st.blob.size : 0;
-      status.textContent = sz > 1048576 ? (sz / 1048576).toFixed(1) + ' MB' : (sz / 1024).toFixed(0) + ' KB';
-      status.style.color = 'rgba(80,200,80,0.7)';
+      const noAudio = st.blob && st.blob._hasAudio === false ? ' (no audio)' : '';
+      status.textContent = (sz > 1048576 ? (sz / 1048576).toFixed(1) + ' MB' : (sz / 1024).toFixed(0) + ' KB') + noAudio;
+      status.style.color = noAudio ? 'rgba(200,180,80,0.7)' : 'rgba(80,200,80,0.7)';
     } else if (st.state === 'error') {
       status.className = 'rec-format-status visible';
       status.textContent = 'Failed — try again';
