@@ -1,6 +1,6 @@
 // --- Info Box: appears once on play, dismissable, "don't show again" persists ---
 (function () {
-  const STORAGE_KEY = 'audio-vis-info-dismissed';
+  const STORAGE_KEY = 'starseed-info-dismissed';
   if (localStorage.getItem(STORAGE_KEY) === '1') return;
 
   // Inject styles
@@ -17,9 +17,9 @@
     #info-box .ib-close{position:absolute;top:8px;right:10px;background:none;border:none;
       color:rgba(255,255,255,0.35);font-size:16px;cursor:pointer;padding:2px 6px;line-height:1;transition:color 0.2s}
     #info-box .ib-close:hover{color:rgba(255,255,255,0.8)}
-    #info-box .ib-footer{display:flex;align-items:center;gap:6px;margin-top:6px}
-    #info-box .ib-footer label{font-size:10px;color:rgba(255,255,255,0.35);cursor:pointer;display:flex;align-items:center;gap:5px}
-    #info-box .ib-footer input[type=checkbox]{accent-color:rgba(255,255,255,0.3);width:12px;height:12px;cursor:pointer}
+    #info-box .ib-dismiss{display:inline;font-size:10px;color:rgba(255,255,255,0.25);cursor:pointer;
+      background:none;border:none;padding:0;font-family:inherit;transition:color 0.2s;margin-top:4px}
+    #info-box .ib-dismiss:hover{color:rgba(255,255,255,0.5)}
     @media(max-width:400px){#info-box{max-width:calc(100vw - 32px);left:8px;top:44px;font-size:11px;padding:12px 14px 10px}}
   `;
   document.head.appendChild(style);
@@ -29,33 +29,32 @@
   box.id = 'info-box';
   box.innerHTML = `
     <button class="ib-close" title="Close">&times;</button>
-    <p>Hit <strong>⏺︎ Record</strong> to render video in <strong>16:9</strong>, <strong>1:1</strong>, or <strong>9:16</strong>. The visuals are boundary-aware; they adapt to any aspect ratio and screen size, so each format has its own character.</p>
-    <p>Each render also varies slightly due to background drift cycles, so no two captures are exactly the same, even with identical settings.</p>
-    <p><strong>Aperture Scale</strong> reframes the composition by adjusting the field of view for each format. It applies to both the live preview and the recorded capture.</p>
-    <div class="ib-footer"><label><input type="checkbox" id="ib-dismiss"/>Don't show again</label></div>
+    <p>Hit <strong>⏺︎ Record</strong> to capture video in <strong>16:9</strong>, <strong>1:1</strong>, or <strong>9:16</strong>. The visuals adapt to each format — every ratio has its own character.</p>
+    <p>Drift cycles mean no two captures are ever quite the same.</p>
+    <p><strong>Listen mode</strong> reacts to your mic in real time at your browser's native size and resolution. No record button here (use screen record).</p>
+    <p><strong>iOS:</strong> rendered videos won't include audio yet (working on it). Screen-record or sync audio later — or come back on desktop.</p>
+    <button class="ib-dismiss">don't show this again</button>
   `;
   document.body.appendChild(box);
-
-  let fadeTimer = null;
 
   function show() {
     if (localStorage.getItem(STORAGE_KEY) === '1') return;
     box.classList.remove('fade-out');
     box.classList.add('visible');
-    clearTimeout(fadeTimer);
-    fadeTimer = setTimeout(close, 30000);
   }
 
   function close() {
-    clearTimeout(fadeTimer);
     box.classList.add('fade-out');
     box.classList.remove('visible');
-    if (document.getElementById('ib-dismiss').checked) {
-      localStorage.setItem(STORAGE_KEY, '1');
-    }
+  }
+
+  function dismiss() {
+    localStorage.setItem(STORAGE_KEY, '1');
+    close();
   }
 
   box.querySelector('.ib-close').addEventListener('click', close);
+  box.querySelector('.ib-dismiss').addEventListener('click', dismiss);
 
   // Hook into play button
   const playBtn = document.getElementById('play-btn');
