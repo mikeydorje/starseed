@@ -18,8 +18,10 @@
   let micSource = null;
 
   // --- Mobile pseudo-fullscreen state ---
-  var fsBtnEl = document.getElementById('fs-btn');
-  var backBtnEl = document.getElementById('back-btn');
+  // fs-btn and back-btn don't exist yet (they're after mic-input.js in the DOM),
+  // so we resolve them lazily after DOMContentLoaded.
+  var fsBtnEl = null;
+  var backBtnEl = null;
   var mobileQ = window.matchMedia('(max-width: 600px)');
   var pseudoFS = false;
 
@@ -108,17 +110,22 @@
   });
 
   // --- Mobile pseudo-fullscreen ---
-  // On mobile, fs-btn hides itself + back-btn instead of native Fullscreen API.
-  // Tapping canvas brings them back.
-  if (fsBtnEl) {
+  // fs-btn/back-btn appear later in the DOM, so bind after DOMContentLoaded.
+  // Use capturing phase so this fires BEFORE the inline Fullscreen API handler.
+  document.addEventListener('DOMContentLoaded', function() {
+    fsBtnEl = document.getElementById('fs-btn');
+    backBtnEl = document.getElementById('back-btn');
+    if (!fsBtnEl) return;
+
     fsBtnEl.addEventListener('click', function(e) {
       if (!mobileQ.matches) return;          // desktop: let native fullscreen handle it
       e.stopImmediatePropagation();           // block inline Fullscreen API handler
+      e.preventDefault();
       pseudoFS = true;
       fsBtnEl.style.display = 'none';
       if (backBtnEl) backBtnEl.style.display = 'none';
-    });
-  }
+    }, true);  // ← capturing phase
+  });
 
   // Canvas click: exit pseudo-fullscreen OR toggle controls during mic mode
   S.renderer.domElement.addEventListener('click', () => {
