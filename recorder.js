@@ -787,6 +787,7 @@ const Recorder = (() => {
   // ===== Format picker overlay =====
   function openFormatPicker() {
     if (!window.SCENE || !window.SCENE.currentBuffer) return;
+    if (window.SCENE.playState === 'listening') return;
     // Save active preview so we can restore it on close/cancel
     _savedPreviewFmt = activePreviewFmt;
     _savedBaseFov = _baseFov;

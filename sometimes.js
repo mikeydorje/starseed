@@ -216,8 +216,13 @@ function showAudioReady() { document.getElementById('upload-area').style.display
 fileInput.addEventListener('change', e => { const file = e.target.files[0]; if (!file) return; currentFileName = file.name; if (!audioContext) initAudio(0.97); const reader = new FileReader(); reader.onload = evt => { const raw = evt.target.result; audioContext.decodeAudioData(raw.slice(0), buf => { currentBuffer = buf; audioDuration = buf.duration; showAudioReady(); AudioStore.save(raw, currentFileName); }); }; reader.readAsArrayBuffer(file); });
 AudioStore.load().then(data => { if (!data) return; currentFileName = data.name; if (!audioContext) initAudio(0.97); audioContext.decodeAudioData(data.buffer, buf => { currentBuffer = buf; audioDuration = buf.duration; showAudioReady(); }); }).catch(() => {});
 
-playBtn.addEventListener('click', () => {
-  if (!currentBuffer) return;
+function ensureAudio() {
+  if (!audioContext) initAudio(0.85);
+  return { audioContext, analyser, dataArray };
+}
+
+function applyAndLaunch() {
+  if (playState === 'listening' && window.SCENE && window.SCENE._stopMic) window.SCENE._stopMic();
   const s = computeSeedValues();
   controlsEl.classList.add('hidden'); controlsEl.classList.remove('visible');
   uniforms.uTenderness.value = s.tenderness; uniforms.uWarmth.value = s.warmth;
@@ -227,6 +232,12 @@ playBtn.addEventListener('click', () => {
   seedCenter = { tenderness: s.tenderness, warmth: s.warmth, closeness: s.closeness, slowness: s.slowness };
   bakedEpoch = s.epoch; bakedFlux = s.flux;
   buildParticles(s.detail); analyser.smoothingTimeConstant = s.smoothing;
+}
+
+playBtn.addEventListener('click', () => {
+  if (!currentBuffer) return;
+  applyAndLaunch();
+
   if (playState === 'paused') { audioContext.resume(); playState = 'playing'; return; }
   if (source) { try { source.stop(); } catch (e) {} source.disconnect(); }
   source = audioContext.createBufferSource(); source.buffer = currentBuffer; source.connect(analyser); analyser.connect(audioContext.destination);
@@ -259,7 +270,7 @@ function animate() {
   requestAnimationFrame(animate);
   const elapsed = clock.getElapsedTime(); uniforms.uTime.value = elapsed;
   let arc = { tenderness: 1, warmth: 1, closeness: 1, slowness: 1, rot: 1 };
-  if (audioDuration > 0 && audioStartTime > 0) { const pr = Math.min((audioContext.currentTime - audioStartTime) / audioDuration, 1); const raw = storyArc(pr); for (const k in raw) arc[k] = 1 + (raw[k] - 1) * bakedEpoch; }
+  if (playState === 'playing' && audioDuration > 0 && audioStartTime > 0) { const pr = Math.min((audioContext.currentTime - audioStartTime) / audioDuration, 1); const raw = storyArc(pr); for (const k in raw) arc[k] = 1 + (raw[k] - 1) * bakedEpoch; }
   const TP = Math.PI * 2;
   for (const k in driftCycles) { const { period, depth } = driftCycles[k]; const sd = depth * (0.3 + bakedFlux * 1.4); const d = (Math.sin(elapsed * TP / period) * 0.65 + Math.sin(elapsed * TP / (period * 2.17) + 1.3) * 0.35) * sd; uniforms[uMap[k]].value = Math.max(0.01, seedCenter[k] * (arc[k] || 1) * (1 + d)); }
   if (analyser && dataArray) { analyser.getByteFrequencyData(dataArray); for (let i = 0; i < 64; i++) frequencyUniform[i] = dataArray[i]; }
@@ -282,6 +293,11 @@ window.SCENE = {
   rotXMult: 0.02, rotDriftScale: 0, tiltDriftScale: 0, storyArc,
   get currentBuffer() { return currentBuffer; }, get audioDuration() { return audioDuration; },
   get audioContext() { return audioContext; }, get analyser() { return analyser; },
-  get playState() { return playState; }, sceneName: 'sometimes'
+  get playState() { return playState; },
+  ensureAudio,
+  applyAndLaunch,
+  setPlayState(v) { playState = v; },
+  stopFileAudio() { if (source) { source.onended = null; try { source.stop(); } catch(e) {} source.disconnect(); source = null; } },
+  sceneName: 'sometimes'
 };
 animate();

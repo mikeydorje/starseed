@@ -270,9 +270,13 @@ AudioStore.load().then(data => {
   });
 }).catch(() => {});
 
-playBtn.addEventListener('click', () => {
-  if (!currentBuffer) return;
+function ensureAudio() {
+  if (!audioContext) initAudio(0.85);
+  return { audioContext, analyser, dataArray };
+}
 
+function applyAndLaunch() {
+  if (playState === 'listening' && window.SCENE && window.SCENE._stopMic) window.SCENE._stopMic();
   const s = computeSeedValues();
   controlsEl.classList.add('hidden');
   controlsEl.classList.remove('visible');
@@ -284,6 +288,11 @@ playBtn.addEventListener('click', () => {
   bakedEpoch = s.epoch; bakedFlux = s.flux;
   buildParticles(s.detail);
   analyser.smoothingTimeConstant = s.smoothing;
+}
+
+playBtn.addEventListener('click', () => {
+  if (!currentBuffer) return;
+  applyAndLaunch();
 
   if (playState === 'paused') {
     audioContext.resume();
@@ -345,7 +354,7 @@ function animate() {
   const elapsed = clock.getElapsedTime();
   uniforms.uTime.value = elapsed;
   let arc = { winding:1, orbit:1, phase:1, revolution:1, rot:1 };
-  if (audioDuration > 0 && audioStartTime > 0) {
+  if (playState === 'playing' && audioDuration > 0 && audioStartTime > 0) {
     const pr = Math.min((audioContext.currentTime - audioStartTime) / audioDuration, 1);
     const raw = storyArc(pr);
     for (const k in raw) arc[k] = 1 + (raw[k] - 1) * bakedEpoch;
@@ -386,6 +395,10 @@ window.SCENE = {
   get audioContext() { return audioContext; },
   get analyser() { return analyser; },
   get playState() { return playState; },
+  ensureAudio,
+  applyAndLaunch,
+  setPlayState(v) { playState = v; },
+  stopFileAudio() { if (source) { source.onended = null; try { source.stop(); } catch(e) {} source.disconnect(); source = null; } },
   sceneName: 'tau'
 };
 

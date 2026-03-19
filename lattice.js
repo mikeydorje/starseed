@@ -370,9 +370,13 @@ AudioStore.load().then(data => {
   });
 }).catch(() => {});
 
-playBtn.addEventListener('click', () => {
-  if (!currentBuffer) return;
+function ensureAudio() {
+  if (!audioContext) initAudio(0.85);
+  return { audioContext, analyser, dataArray };
+}
 
+function applyAndLaunch() {
+  if (playState === 'listening' && window.SCENE && window.SCENE._stopMic) window.SCENE._stopMic();
   const seeds = computeSeedValues();
   controlsEl.classList.add('hidden');
   controlsEl.classList.remove('visible');
@@ -396,6 +400,11 @@ playBtn.addEventListener('click', () => {
   bakedShimmer = seeds.shimmer;
   buildParticles(seeds.detail);
   analyser.smoothingTimeConstant = seeds.smoothing;
+}
+
+playBtn.addEventListener('click', () => {
+  if (!currentBuffer) return;
+  applyAndLaunch();
 
   if (playState === 'paused') {
     audioContext.resume();
@@ -518,7 +527,7 @@ function animate() {
   uniforms.uTime.value = elapsed;
 
   let arcMult = { bond: 1, symmetry: 1, resonance: 1, facet: 1, rot: 1 };
-  if (audioDuration > 0 && audioStartTime > 0) {
+  if (playState === 'playing' && audioDuration > 0 && audioStartTime > 0) {
     const songElapsed = audioContext.currentTime - audioStartTime;
     const progress = Math.min(songElapsed / audioDuration, 1.0);
     const rawArc = storyArc(progress);
@@ -575,6 +584,10 @@ window.SCENE = {
   get audioContext() { return audioContext; },
   get analyser() { return analyser; },
   get playState() { return playState; },
+  ensureAudio,
+  applyAndLaunch,
+  setPlayState(v) { playState = v; },
+  stopFileAudio() { if (source) { source.onended = null; try { source.stop(); } catch(e) {} source.disconnect(); source = null; } },
   sceneName: 'lattice'
 };
 
