@@ -122,6 +122,8 @@
   // --- Mobile pseudo-fullscreen ---
   // fs-btn/back-btn appear later in the DOM, so bind after DOMContentLoaded.
   // Use capturing phase so this fires BEFORE the inline Fullscreen API handler.
+  var desktopFSHidden = false;
+
   document.addEventListener('DOMContentLoaded', function() {
     fsBtnEl = document.getElementById('fs-btn');
     backBtnEl = document.getElementById('back-btn');
@@ -133,11 +135,31 @@
       e.preventDefault();
       enterPseudoFS();
     }, true);  // ← capturing phase
+
+    // Desktop: hide chrome when entering native fullscreen, restore on exit
+    document.addEventListener('fullscreenchange', function() {
+      if (isMobile) return;
+      if (document.fullscreenElement) {
+        desktopFSHidden = true;
+        fsBtnEl.style.display = 'none';
+        if (backBtnEl) backBtnEl.style.display = 'none';
+      } else {
+        desktopFSHidden = false;
+        fsBtnEl.style.display = '';
+        if (backBtnEl) backBtnEl.style.display = '';
+      }
+    });
   });
 
-  // Canvas click: exit pseudo-fullscreen OR toggle controls during mic mode
+  // Canvas click: restore chrome in fullscreen/pseudo-fs OR toggle controls during mic mode
   S.renderer.domElement.addEventListener('click', () => {
     if (pseudoFS) { exitPseudoFS(); return; }
+    if (desktopFSHidden) {
+      desktopFSHidden = false;
+      if (fsBtnEl) fsBtnEl.style.display = '';
+      if (backBtnEl) backBtnEl.style.display = '';
+      return;
+    }
     if (S.playState !== 'listening') return;
     controlsEl.classList.toggle('visible');
     controlsEl.classList.toggle('hidden');
