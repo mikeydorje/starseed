@@ -17,6 +17,19 @@
   let micStream = null;
   let micSource = null;
 
+  // --- Mobile pseudo-fullscreen state ---
+  var fsBtnEl = document.getElementById('fs-btn');
+  var backBtnEl = document.getElementById('back-btn');
+  var mobileQ = window.matchMedia('(max-width: 600px)');
+  var pseudoFS = false;
+
+  function exitPseudoFS() {
+    if (!pseudoFS) return;
+    pseudoFS = false;
+    if (fsBtnEl) fsBtnEl.style.display = '';
+    if (backBtnEl) backBtnEl.style.display = '';
+  }
+
   // --- Inject styles ---
   const style = document.createElement('style');
   style.textContent = [
@@ -24,8 +37,7 @@
     '.listen-btn:hover{background:rgba(80,180,220,0.25);border-color:rgba(80,180,220,0.4)}',
     '.listen-btn.active{color:rgba(220,100,80,0.9);background:rgba(220,100,80,0.12);border-color:rgba(220,100,80,0.25)}',
     '.listen-btn.active:hover{background:rgba(220,100,80,0.25);border-color:rgba(220,100,80,0.4)}',
-    '.controls-inner{padding-bottom:80px}',
-    '@media(max-width:600px){#fs-btn{display:none!important}#back-btn{right:auto;left:50%;transform:translateX(-50%)}#rec-btn{right:16px!important}#rec-pause-btn{right:60px!important}#fmt-preview-bar{right:104px!important}}'
+    '.controls-inner{padding-bottom:80px}'
   ].join('\n');
   document.head.appendChild(style);
 
@@ -76,6 +88,7 @@
       micStream = null;
     }
 
+    exitPseudoFS();
     S.setPlayState('idle');
     listenBtn.textContent = 'Listen';
     listenBtn.classList.remove('active');
@@ -94,8 +107,22 @@
     }
   });
 
-  // Canvas click: toggle controls visibility during mic mode
+  // --- Mobile pseudo-fullscreen ---
+  // On mobile, fs-btn hides itself + back-btn instead of native Fullscreen API.
+  // Tapping canvas brings them back.
+  if (fsBtnEl) {
+    fsBtnEl.addEventListener('click', function(e) {
+      if (!mobileQ.matches) return;          // desktop: let native fullscreen handle it
+      e.stopImmediatePropagation();           // block inline Fullscreen API handler
+      pseudoFS = true;
+      fsBtnEl.style.display = 'none';
+      if (backBtnEl) backBtnEl.style.display = 'none';
+    });
+  }
+
+  // Canvas click: exit pseudo-fullscreen OR toggle controls during mic mode
   S.renderer.domElement.addEventListener('click', () => {
+    if (pseudoFS) { exitPseudoFS(); return; }
     if (S.playState !== 'listening') return;
     controlsEl.classList.toggle('visible');
     controlsEl.classList.toggle('hidden');
