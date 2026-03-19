@@ -209,8 +209,7 @@
       return;
     }
     if (S.playState !== 'listening') return;
-    controlsEl.classList.toggle('visible');
-    controlsEl.classList.toggle('hidden');
+    stopListening();
   });
 
   // Expose stop function for scene integration
