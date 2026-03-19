@@ -1,0 +1,23 @@
+info-box.js
+  bc5116cfb05829a1 32-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.15",
+  "base_commit_sha": "41e3407378e9643f37df15c319a74dbb352f4e41",
+  "prompts": {
+    "bc5116cfb05829a1": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "db9a0a72-f544-46da-90bc-41ca32062e29",
+        "model": "unknown"
+      },
+      "human_author": "Mikey Dorje <mikeydorje@gmail.com>",
+      "messages": [],
+      "total_additions": 2,
+      "total_deletions": 2,
+      "accepted_lines": 2,
+      "overriden_lines": 0
+    }
+  }
+}
