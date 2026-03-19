@@ -71,6 +71,27 @@
       color: #555;
       line-height: 1.5;
     }
+    .about {
+      max-width: 540px;
+      margin: 64px auto 32px;
+      padding: 0 24px;
+      font-size: 12px;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.3);
+      text-align: center;
+    }
+    .about h2 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      color: #444;
+      margin-bottom: 20px;
+      font-weight: 400;
+    }
+    .about p { margin: 0 0 14px; }
+    .about strong { color: rgba(255,255,255,0.45); font-weight: 600; }
+    .about a { color: rgba(255,255,255,0.35); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.1); transition: color 0.2s; }
+    .about a:hover { color: rgba(255,255,255,0.6); }
   </style>
 </head>
 <body>
@@ -157,6 +178,15 @@
     -->
   </div>
   <button id="reset-hints" style="display:none;margin:48px auto 0;padding:6px 16px;font-family:inherit;font-size:11px;letter-spacing:1px;color:rgba(255,255,255,0.25);background:none;border:1px solid rgba(255,255,255,0.06);border-radius:8px;cursor:pointer;transition:all 0.3s" onmouseover="this.style.color='rgba(255,255,255,0.6)';this.style.borderColor='rgba(255,255,255,0.15)'" onmouseout="this.style.color='rgba(255,255,255,0.25)';this.style.borderColor='rgba(255,255,255,0.06)'">Reset Info Popups</button>
+
+  <div class="about">
+    <h2>How it works</h2>
+    <p>Each scene is a cloud of particles driven by <strong>custom GPU shaders</strong>. Drop in an audio file and the <strong>Web Audio API</strong> splits the signal into 64 frequency bands in real time — those bands push, pull, and reshape the particles every frame.</p>
+    <p>Eight sliders per scene let you tune the physics: spread, drift, colour, threshold, and more. A <strong>narrative arc</strong> slowly evolves the parameters over the length of the track so the visuals tell a story even if you never touch a slider.</p>
+    <p>Behind the scenes, slow <strong>drift cycles</strong> — long sine waves between 3 and 8 minutes — continually shift rotation and scale. Combined with the arc, this means no two plays look the same.</p>
+    <p>Hit record and the app renders offline at <strong>60 fps</strong> using WebCodecs, muxing straight to MP4 — no server, no upload, everything stays in your browser. <strong>Listen mode</strong> skips the file and reacts directly to your microphone.</p>
+    <p>Built with <strong>Three.js</strong>, <strong>WebGL</strong>, and zero build tools. Just static files on GitHub Pages.</p>
+  </div>
 
   <script src="audio-store.js"></script>
   <script>
