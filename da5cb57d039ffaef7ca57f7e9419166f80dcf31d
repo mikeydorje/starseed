@@ -1,0 +1,23 @@
+mic-input.js
+  bc5116cfb05829a1 26-28,32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.15",
+  "base_commit_sha": "da5cb57d039ffaef7ca57f7e9419166f80dcf31d",
+  "prompts": {
+    "bc5116cfb05829a1": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "db9a0a72-f544-46da-90bc-41ca32062e29",
+        "model": "unknown"
+      },
+      "human_author": "Mikey Dorje <mikeydorje@gmail.com>",
+      "messages": [],
+      "total_additions": 4,
+      "total_deletions": 8,
+      "accepted_lines": 4,
+      "overriden_lines": 0
+    }
+  }
+}
