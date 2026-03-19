@@ -22,7 +22,7 @@
   // so we resolve them lazily after DOMContentLoaded.
   var fsBtnEl = null;
   var backBtnEl = null;
-  var mobileQ = window.matchMedia('(max-width: 600px)');
+  var isMobile = matchMedia('(pointer: coarse)').matches;
   var pseudoFS = false;
 
   function exitPseudoFS() {
@@ -118,7 +118,7 @@
     if (!fsBtnEl) return;
 
     fsBtnEl.addEventListener('click', function(e) {
-      if (!mobileQ.matches) return;          // desktop: let native fullscreen handle it
+      if (!isMobile) return;                  // desktop: let native fullscreen handle it
       e.stopImmediatePropagation();           // block inline Fullscreen API handler
       e.preventDefault();
       pseudoFS = true;
