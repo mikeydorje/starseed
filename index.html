@@ -45,6 +45,9 @@
       border-color: rgba(255,255,255,0.12);
       transform: translateY(-4px);
     }
+    .scene-card:target {
+      border-color: rgba(255,255,255,0.25);
+    }
     .scene-card .icon {
       font-size: 36px;
       margin-bottom: 16px;
@@ -163,6 +166,19 @@
       HINT_KEYS.forEach(function(k){localStorage.removeItem(k);});
       if('caches'in window){caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k);});});}
       location.reload(true);
+    });
+  })();
+  </script>
+  <script>
+  (function(){
+    if (!location.hash) return;
+    var el = document.getElementById(location.hash.slice(1));
+    if (!el) return;
+    // Start at top, then smooth-scroll to the card
+    history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+    requestAnimationFrame(function(){
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   })();
   </script>
