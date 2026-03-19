@@ -29,18 +29,7 @@
     pseudoFS = true;
     if (fsBtnEl) fsBtnEl.style.display = 'none';
     if (backBtnEl) backBtnEl.style.display = 'none';
-    // Hide recorder toolbar and reset to native screen size
     document.body.classList.add('pseudo-fs');
-    document.body.classList.remove('fmt-preview-active');
-    S.renderer.setPixelRatio(devicePixelRatio);
-    S.renderer.setSize(window.innerWidth, window.innerHeight);
-    S.camera.aspect = window.innerWidth / window.innerHeight;
-    S.camera.updateProjectionMatrix();
-    if (S.uniforms && S.uniforms.uViewport) {
-      S.uniforms.uViewport.value.set(window.innerWidth, window.innerHeight);
-    }
-    S.renderer.domElement.style.width = '';
-    S.renderer.domElement.style.height = '';
   }
 
   function exitPseudoFS() {
@@ -59,7 +48,8 @@
     '.listen-btn.active{color:rgba(220,100,80,0.9);background:rgba(220,100,80,0.12);border-color:rgba(220,100,80,0.25)}',
     '.listen-btn.active:hover{background:rgba(220,100,80,0.25);border-color:rgba(220,100,80,0.4)}',
     '.controls-inner{padding-bottom:80px}',
-    'body.pseudo-fs #rec-btn,body.pseudo-fs #rec-pause-btn,body.pseudo-fs #fmt-preview-bar{display:none!important}'
+    'body.pseudo-fs #rec-btn,body.pseudo-fs #rec-pause-btn,body.pseudo-fs #fmt-preview-bar{display:none!important}',
+    'body.pseudo-fs canvas{position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;transform:none!important;box-shadow:none!important}'
   ].join('\n');
   document.head.appendChild(style);
 
