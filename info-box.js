@@ -29,10 +29,10 @@
   box.id = 'info-box';
   box.innerHTML = `
     <button class="ib-close" title="Close">&times;</button>
-    <p>Hit <strong>⏺︎ Record</strong> to capture video in <strong>16:9</strong>, <strong>1:1</strong>, or <strong>9:16</strong>. The visuals adapt to each format — every ratio has its own character.</p>
+    <p>Hit <strong>⏺︎ Record</strong> to capture video in <strong>16:9</strong>, <strong>1:1</strong>, or <strong>9:16</strong>. The visuals adapt to each format; every ratio has its own character. <strong>Aperture Scale</strong> adjusts the field of view — use it to reframe the composition for each format.</p>
+    <p><strong>iOS:</strong> rendered videos won't include audio yet (working on it). Screen-record or sync audio later; or come back on desktop.</p>
     <p>Drift cycles mean no two captures are ever quite the same.</p>
     <p><strong>Listen mode</strong> reacts to your mic in real time at your browser's native size and resolution. No record button here (use screen record).</p>
-    <p><strong>iOS:</strong> rendered videos won't include audio yet (working on it). Screen-record or sync audio later — or come back on desktop.</p>
     <button class="ib-dismiss">don't show this again</button>
   `;
   document.body.appendChild(box);
