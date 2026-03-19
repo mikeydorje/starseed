@@ -157,14 +157,21 @@
 
     // Desktop: hide chrome when entering native fullscreen, restore on exit
     var inDesktopFS = false;
+    var tabWasVisible = false;
 
     function updateTabVisibility() {
-      if (!inDesktopFS) { toolbarTab.style.display = 'none'; return; }
+      if (!inDesktopFS) { toolbarTab.style.display = 'none'; tabWasVisible = false; return; }
       var st = S.playState;
       var toolbarWouldShow = (st === 'playing' || st === 'paused') && !controlsEl.classList.contains('visible');
       toolbarTab.style.display = toolbarWouldShow ? 'flex' : 'none';
-      // Also sync toolbar-hidden: if toolbar isn't showing, remove class so it doesn't stick
-      if (!toolbarWouldShow) document.body.classList.remove('toolbar-hidden');
+      // On transition to showing: auto-hide toolbar, reset tab to ▲
+      if (toolbarWouldShow && !tabWasVisible) {
+        document.body.classList.add('toolbar-hidden');
+        toolbarTab.classList.remove('open');
+        toolbarTab.innerHTML = '\u25B2';
+        toolbarTab.title = 'Show toolbar';
+      }
+      tabWasVisible = toolbarWouldShow;
     }
 
     document.addEventListener('fullscreenchange', function() {
