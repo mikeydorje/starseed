@@ -49,7 +49,12 @@
     '.listen-btn.active:hover{background:rgba(220,100,80,0.25);border-color:rgba(220,100,80,0.4)}',
     '#controls.visible~#rec-btn,#controls.visible~#rec-pause-btn,#controls.visible~#fmt-preview-bar{display:none!important}',
     'body.pseudo-fs #rec-btn,body.pseudo-fs #rec-pause-btn,body.pseudo-fs #fmt-preview-bar{display:none!important}',
-    'body.pseudo-fs canvas{position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;transform:none!important;box-shadow:none!important}'
+    'body.pseudo-fs canvas{position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;transform:none!important;box-shadow:none!important}',
+    'body.toolbar-hidden #rec-btn,body.toolbar-hidden #rec-pause-btn,body.toolbar-hidden #fmt-preview-bar{transform:translateY(60px);transition:transform 0.3s ease}',
+    '#rec-btn,#rec-pause-btn,#fmt-preview-bar{transition:transform 0.3s ease}',
+    '#toolbar-tab{position:fixed;bottom:0;right:16px;z-index:21;width:36px;height:18px;display:none;align-items:center;justify-content:center;background:rgba(10,10,20,0.5);border:1px solid rgba(255,255,255,0.08);border-bottom:none;border-radius:6px 6px 0 0;cursor:pointer;color:rgba(255,255,255,0.3);font-size:12px;backdrop-filter:blur(6px);transition:color 0.3s}',
+    '#toolbar-tab:hover{color:rgba(255,255,255,0.6)}',
+    '#toolbar-tab.open{bottom:52px}'
   ].join('\n');
   document.head.appendChild(style);
 
@@ -136,6 +141,20 @@
       enterPseudoFS();
     }, true);  // ← capturing phase
 
+    // Desktop toolbar pull-tab
+    var toolbarTab = document.createElement('button');
+    toolbarTab.id = 'toolbar-tab';
+    toolbarTab.innerHTML = '\u25B2';  // ▲
+    toolbarTab.title = 'Show toolbar';
+    document.body.appendChild(toolbarTab);
+
+    toolbarTab.addEventListener('click', function() {
+      var hidden = document.body.classList.toggle('toolbar-hidden');
+      toolbarTab.classList.toggle('open', !hidden);
+      toolbarTab.innerHTML = hidden ? '\u25B2' : '\u25BC';
+      toolbarTab.title = hidden ? 'Show toolbar' : 'Hide toolbar';
+    });
+
     // Desktop: hide chrome when entering native fullscreen, restore on exit
     document.addEventListener('fullscreenchange', function() {
       if (isMobile) return;
@@ -143,10 +162,17 @@
         desktopFSHidden = true;
         fsBtnEl.style.display = 'none';
         if (backBtnEl) backBtnEl.style.display = 'none';
+        document.body.classList.add('toolbar-hidden');
+        toolbarTab.style.display = 'flex';
+        toolbarTab.classList.remove('open');
+        toolbarTab.innerHTML = '\u25B2';
       } else {
         desktopFSHidden = false;
         fsBtnEl.style.display = '';
         if (backBtnEl) backBtnEl.style.display = '';
+        document.body.classList.remove('toolbar-hidden');
+        toolbarTab.style.display = 'none';
+        toolbarTab.classList.remove('open');
       }
     });
   });
