@@ -21,7 +21,7 @@
   const style = document.createElement('style');
   style.textContent = [
     '.mic-divider{text-align:center;color:rgba(255,255,255,0.2);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:10px 0 6px}',
-    '.listen-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px 0;font-family:inherit;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(80,180,220,0.85);background:rgba(80,180,220,0.12);border:1px solid rgba(80,180,220,0.25);border-radius:10px;cursor:pointer;transition:all 0.3s}',
+    '.listen-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px 0;font-family:inherit;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(80,180,220,0.85);background:rgba(80,180,220,0.12);border:1px solid rgba(80,180,220,0.25);border-radius:10px;cursor:pointer;transition:all 0.3s;margin-bottom:16px}',
     '.listen-btn:hover{background:rgba(80,180,220,0.25);border-color:rgba(80,180,220,0.4)}',
     '.listen-btn.active{color:rgba(220,100,80,0.9);background:rgba(220,100,80,0.12);border-color:rgba(220,100,80,0.25)}',
     '.listen-btn.active:hover{background:rgba(220,100,80,0.25);border-color:rgba(220,100,80,0.4)}'
@@ -38,8 +38,10 @@
   listenBtn.textContent = 'Listen';
   listenBtn.title = 'React to microphone audio';
 
-  audioReady.insertAdjacentElement('afterend', divider);
-  divider.insertAdjacentElement('afterend', listenBtn);
+  // Insert before the file-input / upload area so it's visible on short mobile screens
+  const fileInput = document.getElementById('file-input');
+  fileInput.insertAdjacentElement('beforebegin', divider);
+  fileInput.insertAdjacentElement('beforebegin', listenBtn);
 
   // --- Mic activation ---
   async function startListening() {
