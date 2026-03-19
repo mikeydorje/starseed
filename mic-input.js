@@ -22,7 +22,7 @@
   // so we resolve them lazily after DOMContentLoaded.
   var fsBtnEl = null;
   var backBtnEl = null;
-  var isMobile = matchMedia('(pointer: coarse)').matches;
+  var isMobile = matchMedia('(pointer: coarse) and (hover: none)').matches;
   var pseudoFS = false;
 
   function enterPseudoFS() {
