@@ -25,7 +25,7 @@
     '.listen-btn.active{color:rgba(220,100,80,0.9);background:rgba(220,100,80,0.12);border-color:rgba(220,100,80,0.25)}',
     '.listen-btn.active:hover{background:rgba(220,100,80,0.25);border-color:rgba(220,100,80,0.4)}',
     '.controls-inner{padding-bottom:80px}',
-    '@media(max-width:600px){#fs-btn{display:none!important}#back-btn{right:auto;left:50%;transform:translateX(-50%)}}'
+    '@media(max-width:600px){#fs-btn{display:none!important}#back-btn{right:auto;left:50%;transform:translateX(-50%)}#rec-btn{right:16px!important}#rec-pause-btn{right:60px!important}#fmt-preview-bar{right:104px!important}}'
   ].join('\n');
   document.head.appendChild(style);
 
