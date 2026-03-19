@@ -156,18 +156,31 @@
     });
 
     // Desktop: hide chrome when entering native fullscreen, restore on exit
+    var inDesktopFS = false;
+
+    function updateTabVisibility() {
+      if (!inDesktopFS) { toolbarTab.style.display = 'none'; return; }
+      var st = S.playState;
+      var toolbarWouldShow = (st === 'playing' || st === 'paused') && !controlsEl.classList.contains('visible');
+      toolbarTab.style.display = toolbarWouldShow ? 'flex' : 'none';
+      // Also sync toolbar-hidden: if toolbar isn't showing, remove class so it doesn't stick
+      if (!toolbarWouldShow) document.body.classList.remove('toolbar-hidden');
+    }
+
     document.addEventListener('fullscreenchange', function() {
       if (isMobile) return;
       if (document.fullscreenElement) {
         desktopFSHidden = true;
+        inDesktopFS = true;
         fsBtnEl.style.display = 'none';
         if (backBtnEl) backBtnEl.style.display = 'none';
         document.body.classList.add('toolbar-hidden');
-        toolbarTab.style.display = 'flex';
         toolbarTab.classList.remove('open');
         toolbarTab.innerHTML = '\u25B2';
+        updateTabVisibility();
       } else {
         desktopFSHidden = false;
+        inDesktopFS = false;
         fsBtnEl.style.display = '';
         if (backBtnEl) backBtnEl.style.display = '';
         document.body.classList.remove('toolbar-hidden');
@@ -175,6 +188,9 @@
         toolbarTab.classList.remove('open');
       }
     });
+
+    // Sync tab visibility with toolbar state (recorder polls at 200ms too)
+    setInterval(updateTabVisibility, 250);
   });
 
   // Canvas click: restore chrome in fullscreen/pseudo-fs OR toggle controls during mic mode
