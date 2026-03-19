@@ -1,0 +1,27 @@
+recorder.js
+  bc5116cfb05829a1 790
+mic-input.js
+  bc5116cfb05829a1 1-108
+lotus.js
+  bc5116cfb05829a1 364-367,369-370,394-398,518,575-578
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.15",
+  "base_commit_sha": "41005ed2282606a59c4e02d11adab4dbea92902b",
+  "prompts": {
+    "bc5116cfb05829a1": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "db9a0a72-f544-46da-90bc-41ca32062e29",
+        "model": "unknown"
+      },
+      "human_author": "Mikey Dorje <mikeydorje@gmail.com>",
+      "messages": [],
+      "total_additions": 309,
+      "total_deletions": 3,
+      "accepted_lines": 309,
+      "overriden_lines": 0
+    }
+  }
+}
