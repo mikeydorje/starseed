@@ -25,11 +25,30 @@
   var isMobile = matchMedia('(pointer: coarse)').matches;
   var pseudoFS = false;
 
+  function enterPseudoFS() {
+    pseudoFS = true;
+    if (fsBtnEl) fsBtnEl.style.display = 'none';
+    if (backBtnEl) backBtnEl.style.display = 'none';
+    // Hide recorder toolbar and reset to native screen size
+    document.body.classList.add('pseudo-fs');
+    document.body.classList.remove('fmt-preview-active');
+    S.renderer.setPixelRatio(devicePixelRatio);
+    S.renderer.setSize(window.innerWidth, window.innerHeight);
+    S.camera.aspect = window.innerWidth / window.innerHeight;
+    S.camera.updateProjectionMatrix();
+    if (S.uniforms && S.uniforms.uViewport) {
+      S.uniforms.uViewport.value.set(window.innerWidth, window.innerHeight);
+    }
+    S.renderer.domElement.style.width = '';
+    S.renderer.domElement.style.height = '';
+  }
+
   function exitPseudoFS() {
     if (!pseudoFS) return;
     pseudoFS = false;
     if (fsBtnEl) fsBtnEl.style.display = '';
     if (backBtnEl) backBtnEl.style.display = '';
+    document.body.classList.remove('pseudo-fs');
   }
 
   // --- Inject styles ---
@@ -39,7 +58,8 @@
     '.listen-btn:hover{background:rgba(80,180,220,0.25);border-color:rgba(80,180,220,0.4)}',
     '.listen-btn.active{color:rgba(220,100,80,0.9);background:rgba(220,100,80,0.12);border-color:rgba(220,100,80,0.25)}',
     '.listen-btn.active:hover{background:rgba(220,100,80,0.25);border-color:rgba(220,100,80,0.4)}',
-    '.controls-inner{padding-bottom:80px}'
+    '.controls-inner{padding-bottom:80px}',
+    'body.pseudo-fs #rec-btn,body.pseudo-fs #rec-pause-btn,body.pseudo-fs #fmt-preview-bar{display:none!important}'
   ].join('\n');
   document.head.appendChild(style);
 
@@ -121,9 +141,7 @@
       if (!isMobile) return;                  // desktop: let native fullscreen handle it
       e.stopImmediatePropagation();           // block inline Fullscreen API handler
       e.preventDefault();
-      pseudoFS = true;
-      fsBtnEl.style.display = 'none';
-      if (backBtnEl) backBtnEl.style.display = 'none';
+      enterPseudoFS();
     }, true);  // ← capturing phase
   });
 
