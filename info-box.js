@@ -46,6 +46,12 @@
   function close() {
     box.classList.add('fade-out');
     box.classList.remove('visible');
+    // If playback was deferred, trigger it now
+    if (pendingPlay) {
+      pendingPlay = false;
+      bypassGate = true;
+      playBtn.click();
+    }
   }
 
   function dismiss() {
@@ -56,12 +62,20 @@
   box.querySelector('.ib-close').addEventListener('click', close);
   box.querySelector('.ib-dismiss').addEventListener('click', dismiss);
 
-  // Hook into play button
+  // Gate playback behind info box dismissal
   const playBtn = document.getElementById('play-btn');
+  let pendingPlay = false;
+  let bypassGate = false;
+
   if (playBtn) {
-    playBtn.addEventListener('click', function () {
-      // Small delay so it appears after controls fade
-      setTimeout(show, 600);
-    });
+    // Capturing listener fires before the scene's handler
+    playBtn.addEventListener('click', function (e) {
+      if (bypassGate) { bypassGate = false; return; }
+      if (localStorage.getItem(STORAGE_KEY) === '1') return;
+      // Block playback and show info box instead
+      e.stopImmediatePropagation();
+      pendingPlay = true;
+      show();
+    }, true);
   }
 })();
