@@ -1,0 +1,25 @@
+info-box.js
+  bc5116cfb05829a1 3,20-22,32-36,49-51,53,57
+index.html
+  bc5116cfb05829a1 6,19-25,77,160,164,172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.15",
+  "base_commit_sha": "50098eaecb2cf11a68e78c2143a35f556018afac",
+  "prompts": {
+    "bc5116cfb05829a1": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "db9a0a72-f544-46da-90bc-41ca32062e29",
+        "model": "unknown"
+      },
+      "human_author": "Mikey Dorje <mikeydorje@gmail.com>",
+      "messages": [],
+      "total_additions": 27,
+      "total_deletions": 25,
+      "accepted_lines": 26,
+      "overriden_lines": 0
+    }
+  }
+}
