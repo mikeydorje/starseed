@@ -241,63 +241,11 @@ const Recorder = (() => {
     setup.particles.rotation.x = time * config.rotSpeedX * config.rotXMult * (arcMult.rot || 1) * (1.0 + td);
   }
 
-  // ===== Check if AAC audio encoding is supported =====
-  async function isAudioEncoderSupported(buffer) {
-    try {
-      const probe = await AudioEncoder.isConfigSupported({
-        codec: 'mp4a.40.2',
-        sampleRate: buffer.sampleRate,
-        numberOfChannels: buffer.numberOfChannels,
-        bitrate: AUDIO_BITRATE,
-      });
-      return probe.supported;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  // ===== Pre-encode audio into an array of serialized chunks =====
-  // Returns { chunks, sampleRate, numberOfChannels } or null on failure.
-  // Chunks are serialized (Uint8Array + metadata) so we can control timestamps
-  // and add them to the muxer via addAudioChunkRaw for iOS compatibility.
-  async function preEncodeAudio(buffer) {
-    const supported = await isAudioEncoderSupported(buffer);
-    if (!supported) {
-      console.warn('AudioEncoder: mp4a.40.2 not supported — video will have no audio');
-      return null;
-    }
-
-    let encodeError = null;
-    const chunks = [];
-
+  // ===== Encode original audio into muxer =====
+  async function encodeAudio(buffer, muxer) {
     const encoder = new AudioEncoder({
-      output: (chunk, meta) => {
-        const buf = new Uint8Array(chunk.byteLength);
-        chunk.copyTo(buf);
-        const entry = {
-          data: buf,
-          type: chunk.type,
-          timestamp: chunk.timestamp,
-          duration: chunk.duration,
-        };
-        // Deep-clone decoder config — the description ArrayBuffer gets neutered
-        // after this callback returns, so we must copy it now
-        if (meta && meta.decoderConfig) {
-          const dc = meta.decoderConfig;
-          entry.meta = {
-            decoderConfig: {
-              codec: dc.codec,
-              sampleRate: dc.sampleRate,
-              numberOfChannels: dc.numberOfChannels,
-              description: dc.description
-                ? dc.description.slice(0)
-                : undefined,
-            },
-          };
-        }
-        chunks.push(entry);
-      },
-      error: (e) => { encodeError = e; console.error('AudioEncoder:', e); },
+      output: (chunk, meta) => muxer.addAudioChunk(chunk, meta),
+      error: (e) => console.error('AudioEncoder:', e),
     });
     encoder.configure({
       codec: 'mp4a.40.2',
@@ -307,78 +255,25 @@ const Recorder = (() => {
     });
 
     const CHUNK = 1024;
-    // Try f32-planar first; fall back to f32 (interleaved) if the browser rejects it
-    let usePlanar = true;
-    try {
-      const testSize = Math.min(CHUNK, buffer.length);
-      const testBuf = new Float32Array(testSize * buffer.numberOfChannels);
-      for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
-        testBuf.set(buffer.getChannelData(ch).subarray(0, testSize), ch * testSize);
-      }
-      const testData = new AudioData({
-        format: 'f32-planar',
-        sampleRate: buffer.sampleRate,
-        numberOfFrames: testSize,
-        numberOfChannels: buffer.numberOfChannels,
-        timestamp: 0,
-        data: testBuf,
-      });
-      testData.close();
-    } catch (e) {
-      usePlanar = false;
-    }
-
     for (let offset = 0; offset < buffer.length; offset += CHUNK) {
-      if (encodeError) break;
       const size = Math.min(CHUNK, buffer.length - offset);
-      let dataBuf, fmt;
-      if (usePlanar) {
-        dataBuf = new Float32Array(size * buffer.numberOfChannels);
-        for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
-          dataBuf.set(buffer.getChannelData(ch).subarray(offset, offset + size), ch * size);
-        }
-        fmt = 'f32-planar';
-      } else {
-        dataBuf = new Float32Array(size * buffer.numberOfChannels);
-        for (let s = 0; s < size; s++) {
-          for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
-            dataBuf[s * buffer.numberOfChannels + ch] = buffer.getChannelData(ch)[offset + s];
-          }
-        }
-        fmt = 'f32';
+      const planar = new Float32Array(size * buffer.numberOfChannels);
+      for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
+        planar.set(buffer.getChannelData(ch).subarray(offset, offset + size), ch * size);
       }
       const audioData = new AudioData({
-        format: fmt,
+        format: 'f32-planar',
         sampleRate: buffer.sampleRate,
         numberOfFrames: size,
         numberOfChannels: buffer.numberOfChannels,
         timestamp: Math.round(offset / buffer.sampleRate * 1_000_000),
-        data: dataBuf,
+        data: planar,
       });
       encoder.encode(audioData);
       audioData.close();
     }
     await encoder.flush();
     encoder.close();
-
-    if (encodeError || chunks.length === 0) {
-      console.warn('Audio encoding failed — video will have no audio');
-      return null;
-    }
-
-    // Normalize timestamps so the first chunk starts at exactly 0.
-    // AAC encoders add priming delay (~2048 samples) which offsets output timestamps.
-    // Desktop players compensate; iOS/Safari does not — causing silent audio tracks.
-    const t0 = chunks[0].timestamp;
-    if (t0 !== 0) {
-      for (const c of chunks) c.timestamp -= t0;
-    }
-
-    return {
-      chunks,
-      sampleRate: buffer.sampleRate,
-      numberOfChannels: buffer.numberOfChannels,
-    };
   }
 
   // ===== Record one aspect ratio → MP4 Blob =====
@@ -388,24 +283,17 @@ const Recorder = (() => {
     const { width, height } = fmt;
     const totalFrames = frameData.length;
 
-    // Pre-encode audio before the expensive video render so failures surface early.
-    // This also lets us normalize timestamps for iOS/Safari compatibility.
-    const audioResult = await preEncodeAudio(audioBuffer);
-
     const target = new ArrayBufferTarget();
-    const muxerOpts = {
+    const muxer = new Muxer({
       target,
       video: { codec: 'avc', width, height },
-      fastStart: 'in-memory',
-    };
-    if (audioResult) {
-      muxerOpts.audio = {
+      audio: {
         codec: 'aac',
-        sampleRate: audioResult.sampleRate,
-        numberOfChannels: audioResult.numberOfChannels,
-      };
-    }
-    const muxer = new Muxer(muxerOpts);
+        sampleRate: audioBuffer.sampleRate,
+        numberOfChannels: audioBuffer.numberOfChannels,
+      },
+      fastStart: 'in-memory',
+    });
 
     // Verify codec support: try High Profile L5.1 → L4.0 → Baseline fallback
     let videoCodec = 'avc1.640033'; // High Profile L5.1
@@ -465,25 +353,11 @@ const Recorder = (() => {
       return null;
     }
 
-    // Add pre-encoded audio chunks with normalized timestamps
-    if (audioResult) {
-      for (const c of audioResult.chunks) {
-        // Reconstruct proper EncodedAudioChunk so addAudioChunk handles
-        // all container metadata (AudioSpecificConfig) correctly
-        const rechunk = new EncodedAudioChunk({
-          type: c.type,
-          timestamp: c.timestamp,
-          duration: c.duration,
-          data: c.data,
-        });
-        muxer.addAudioChunk(rechunk, c.meta || undefined);
-        rechunk.close();
-      }
-    }
+    // Encode & mux audio
+    await encodeAudio(audioBuffer, muxer);
 
     muxer.finalize();
     const blob = new Blob([target.buffer], { type: 'video/mp4' });
-    blob._hasAudio = !!audioResult;
 
     setup.renderer.forceContextLoss();
     setup.renderer.dispose();
@@ -1061,9 +935,8 @@ const Recorder = (() => {
     } else if (st.state === 'done') {
       status.className = 'rec-format-status visible';
       const sz = st.blob ? st.blob.size : 0;
-      const noAudio = st.blob && st.blob._hasAudio === false ? ' (no audio)' : '';
-      status.textContent = (sz > 1048576 ? (sz / 1048576).toFixed(1) + ' MB' : (sz / 1024).toFixed(0) + ' KB') + noAudio;
-      status.style.color = noAudio ? 'rgba(200,180,80,0.7)' : 'rgba(80,200,80,0.7)';
+      status.textContent = sz > 1048576 ? (sz / 1048576).toFixed(1) + ' MB' : (sz / 1024).toFixed(0) + ' KB';
+      status.style.color = 'rgba(80,200,80,0.7)';
     } else if (st.state === 'error') {
       status.className = 'rec-format-status visible';
       status.textContent = 'Failed — try again';
