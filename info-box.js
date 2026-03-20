@@ -6,12 +6,12 @@
   // Inject styles
   const style = document.createElement('style');
   style.textContent = `
-    #info-box{position:fixed;top:48px;left:16px;z-index:25;max-width:300px;padding:16px 18px 14px;
-      background:rgba(10,10,18,0.72);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08);
+    #info-box{position:fixed;top:50%;left:50%;z-index:25;max-width:340px;padding:20px 22px 16px;
+      background:rgba(10,10,18,0.82);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08);
       border-radius:12px;font-family:'Segoe UI',system-ui,sans-serif;color:rgba(255,255,255,0.7);
       font-size:12px;line-height:1.55;opacity:0;pointer-events:none;
-      transform:translateY(-6px);transition:opacity 0.5s ease,transform 0.5s ease}
-    #info-box.visible{opacity:1;pointer-events:auto;transform:translateY(0)}
+      transform:translate(-50%,-50%) translateY(-6px);transition:opacity 0.5s ease,transform 0.5s ease}
+    #info-box.visible{opacity:1;pointer-events:auto;transform:translate(-50%,-50%)}
     #info-box.fade-out{opacity:0;pointer-events:none;transition:opacity 1.2s ease}
     #info-box p{margin:0 0 10px}
     #info-box .ib-close{position:absolute;top:8px;right:10px;background:none;border:none;
@@ -20,7 +20,8 @@
     #info-box .ib-dismiss{display:inline;font-size:10px;color:rgba(255,255,255,0.25);cursor:pointer;
       background:none;border:none;padding:0;font-family:inherit;transition:color 0.2s;margin-top:4px}
     #info-box .ib-dismiss:hover{color:rgba(255,255,255,0.5)}
-    @media(max-width:400px){#info-box{max-width:calc(100vw - 32px);left:8px;top:44px;font-size:11px;padding:12px 14px 10px}}
+    @media(max-width:400px){#info-box{top:44px;left:8px;max-width:calc(100vw - 32px);font-size:11px;padding:12px 14px 10px;transform:translateY(-6px)}}
+    @media(max-width:400px){#info-box.visible{transform:translateY(0)}}
   `;
   document.head.appendChild(style);
 
@@ -29,8 +30,9 @@
   box.id = 'info-box';
   box.innerHTML = `
     <button class="ib-close" title="Close">&times;</button>
-    <p>Hit <strong>⏺︎ Record</strong> to capture video in <strong>16:9</strong>, <strong>1:1</strong>, or <strong>9:16</strong>. The visuals adapt to each format; every ratio has its own character. <strong>Aperture Scale</strong> adjusts the field of view — use it to reframe the composition for each format.</p>
-    <p><strong>iOS:</strong> rendered videos won't include audio yet (working on it). Screen-record or sync audio later; or come back on desktop.</p>
+    <p>Hit <strong>⏺︎ Record</strong> to capture video in <strong>16:9</strong>, <strong>1:1</strong>, or <strong>9:16</strong>. The visuals adapt to each format — every ratio has its own character. <strong>Aperture Scale</strong> adjusts the field of view — use it to reframe the composition for each format.</p>
+    <p>While rendering, keep this tab in the foreground and your device awake — the browser needs the screen active to draw each frame.</p>
+    <p><strong>iOS:</strong> rendered videos won't include audio yet (working on it). Screen-record or sync audio later — or come back on desktop.</p>
     <p>Drift cycles mean no two captures are ever quite the same.</p>
     <p><strong>Listen mode</strong> reacts to your mic in real time at your browser's native size and resolution. No record button here (use screen record).</p>
     <button class="ib-dismiss">don't show this again</button>
