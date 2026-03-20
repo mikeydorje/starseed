@@ -56,7 +56,7 @@
     '#toolbar-tab:hover{color:rgba(255,255,255,0.6)}',
     '#listen-pause{position:fixed;bottom:16px;right:60px;z-index:20;width:36px;height:36px;padding:0;display:none;align-items:center;justify-content:center;background:rgba(10,10,20,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:8px;cursor:pointer;color:rgba(255,255,255,0.4);font-size:16px;backdrop-filter:blur(6px);transition:all 0.3s}',
     '#listen-pause:hover{color:#fff;background:rgba(80,180,220,0.35);border-color:rgba(80,180,220,0.5)}',
-    'body.pseudo-fs #listen-pause,body.toolbar-hidden #listen-pause{display:none!important}'
+    'body.pseudo-fs #listen-pause,body.toolbar-hidden #listen-pause,#controls.visible~#listen-pause{display:none!important}'
   ].join('\n');
   document.head.appendChild(style);
 
@@ -74,24 +74,14 @@
   var listenPauseBtn = document.createElement('button');
   listenPauseBtn.id = 'listen-pause';
   listenPauseBtn.innerHTML = '&#x23F8;&#xFE0E;'; // ⏸︎
-  listenPauseBtn.title = 'Pause listening';
+  listenPauseBtn.title = 'Stop listening';
   document.body.appendChild(listenPauseBtn);
 
   function showListenPause() { listenPauseBtn.style.display = 'flex'; }
   function hideListenPause() { listenPauseBtn.style.display = 'none'; }
 
   listenPauseBtn.addEventListener('click', function() {
-    var ctx = S.audioContext;
-    if (!ctx) return;
-    if (ctx.state === 'running') {
-      ctx.suspend();
-      listenPauseBtn.innerHTML = '&#x25B6;&#xFE0E;'; // ▶︎
-      listenPauseBtn.title = 'Resume listening';
-    } else if (ctx.state === 'suspended') {
-      ctx.resume();
-      listenPauseBtn.innerHTML = '&#x23F8;&#xFE0E;'; // ⏸︎
-      listenPauseBtn.title = 'Pause listening';
-    }
+    stopListening();
   });
 
   // --- Mic activation ---
@@ -115,8 +105,6 @@
       S.setPlayState('listening');
       listenBtn.textContent = 'Stop Listening';
       listenBtn.classList.add('active');
-      listenPauseBtn.innerHTML = '&#x23F8;&#xFE0E;';
-      listenPauseBtn.title = 'Pause listening';
       showListenPause();
     } catch (err) {
       console.warn('Mic access denied:', err.message);
