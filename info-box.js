@@ -6,12 +6,12 @@
   // Inject styles
   const style = document.createElement('style');
   style.textContent = `
-    #info-box{position:fixed;top:50%;left:50%;z-index:25;max-width:340px;padding:20px 22px 16px;
-      background:rgba(10,10,18,0.82);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08);
+    #info-box{position:fixed;top:48px;left:16px;z-index:25;max-width:300px;padding:16px 18px 14px;
+      background:rgba(10,10,18,0.72);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08);
       border-radius:12px;font-family:'Segoe UI',system-ui,sans-serif;color:rgba(255,255,255,0.7);
       font-size:12px;line-height:1.55;opacity:0;pointer-events:none;
-      transform:translate(-50%,-50%) translateY(-6px);transition:opacity 0.5s ease,transform 0.5s ease}
-    #info-box.visible{opacity:1;pointer-events:auto;transform:translate(-50%,-50%)}
+      transform:translateY(-6px);transition:opacity 0.5s ease,transform 0.5s ease}
+    #info-box.visible{opacity:1;pointer-events:auto;transform:translateY(0)}
     #info-box.fade-out{opacity:0;pointer-events:none;transition:opacity 1.2s ease}
     #info-box p{margin:0 0 10px}
     #info-box .ib-close{position:absolute;top:8px;right:10px;background:none;border:none;
@@ -20,8 +20,7 @@
     #info-box .ib-dismiss{display:inline;font-size:10px;color:rgba(255,255,255,0.25);cursor:pointer;
       background:none;border:none;padding:0;font-family:inherit;transition:color 0.2s;margin-top:4px}
     #info-box .ib-dismiss:hover{color:rgba(255,255,255,0.5)}
-    @media(max-width:400px){#info-box{top:44px;left:8px;max-width:calc(100vw - 32px);font-size:11px;padding:12px 14px 10px;transform:translateY(-6px)}}
-    @media(max-width:400px){#info-box.visible{transform:translateY(0)}}
+    @media(max-width:400px){#info-box{max-width:calc(100vw - 32px);left:8px;top:44px;font-size:11px;padding:12px 14px 10px}}
   `;
   document.head.appendChild(style);
 
@@ -74,6 +73,8 @@
     playBtn.addEventListener('click', function (e) {
       if (bypassGate) { bypassGate = false; return; }
       if (localStorage.getItem(STORAGE_KEY) === '1') return;
+      // If info box is already open, treat play/resume as dismiss
+      if (box.classList.contains('visible')) { e.stopImmediatePropagation(); close(); return; }
       // Block playback and show info box instead
       e.stopImmediatePropagation();
       pendingPlay = true;
