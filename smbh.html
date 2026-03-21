@@ -162,6 +162,8 @@
       <button id="play-btn" class="play-btn">▶︎ Play</button>
       <button id="replace-btn" class="replace-btn">Replace Audio</button>
     </div>
+    <button id="reset-hints" style="display:none;margin:16px auto 0;padding:4px 12px;font-family:inherit;font-size:10px;letter-spacing:1px;color:rgba(255,255,255,0.2);background:none;border:1px solid rgba(255,255,255,0.05);border-radius:6px;cursor:pointer;transition:all 0.3s" onmouseover="this.style.color='rgba(255,255,255,0.5)';this.style.borderColor='rgba(255,255,255,0.12)'" onmouseout="this.style.color='rgba(255,255,255,0.2)';this.style.borderColor='rgba(255,255,255,0.05)'" onclick="localStorage.removeItem('starseed-info-dismissed');this.style.display='none'">Reset Info Popup</button>
+    <script>if(localStorage.getItem('starseed-info-dismissed')==='1'){var rh=document.getElementById('reset-hints');if(rh)rh.style.display='block'}</script>
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>

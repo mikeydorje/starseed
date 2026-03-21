@@ -59,6 +59,8 @@
     <input type="file" id="file-input" accept=".mp3,.wav,.m4a,.aac,.ogg,.flac,.webm,audio/mpeg,audio/wav,audio/mp4,audio/aac,audio/ogg,audio/flac,audio/webm" />
     <div id="upload-area"><label class="upload-btn" for="file-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload Audio</label></div>
     <div id="audio-ready" style="display:none"><span id="audio-name" class="audio-filename"></span><button id="play-btn" class="play-btn">▶︎ Play</button><button id="replace-btn" class="replace-btn">Replace Audio</button></div>
+    <button id="reset-hints" style="display:none;margin:16px auto 0;padding:4px 12px;font-family:inherit;font-size:10px;letter-spacing:1px;color:rgba(255,255,255,0.2);background:none;border:1px solid rgba(255,255,255,0.05);border-radius:6px;cursor:pointer;transition:all 0.3s" onmouseover="this.style.color='rgba(255,255,255,0.5)';this.style.borderColor='rgba(255,255,255,0.12)'" onmouseout="this.style.color='rgba(255,255,255,0.2)';this.style.borderColor='rgba(255,255,255,0.05)'" onclick="localStorage.removeItem('starseed-info-dismissed');this.style.display='none'">Reset Info Popup</button>
+    <script>if(localStorage.getItem('starseed-info-dismissed')==='1'){var rh=document.getElementById('reset-hints');if(rh)rh.style.display='block'}</script>
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>

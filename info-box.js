@@ -47,11 +47,13 @@
   function close() {
     box.classList.add('fade-out');
     box.classList.remove('visible');
-    // If playback was deferred, trigger it now
-    if (pendingPlay) {
+    // If playback was deferred and we're not in listen mode, trigger it now
+    if (pendingPlay && (!window.SCENE || window.SCENE.playState !== 'listening')) {
       pendingPlay = false;
       bypassGate = true;
       playBtn.click();
+    } else {
+      pendingPlay = false;
     }
   }
 
@@ -73,7 +75,9 @@
     playBtn.addEventListener('click', function (e) {
       if (bypassGate) { bypassGate = false; return; }
       if (localStorage.getItem(STORAGE_KEY) === '1') return;
-      // If info box is already open, treat play/resume as dismiss
+      // Resume should never trigger info box — just play
+      if (playBtn.textContent.indexOf('Resume') !== -1) return;
+      // If info box is already open, treat play as dismiss
       if (box.classList.contains('visible')) { e.stopImmediatePropagation(); close(); return; }
       // Block playback and show info box instead
       e.stopImmediatePropagation();
