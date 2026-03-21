@@ -53,7 +53,7 @@
       border-color: rgba(255,255,255,0.12);
       transform: translateY(-4px);
     }
-    .scene-card:target {
+    .scene-card.scroll-target {
       border-color: rgba(255,255,255,0.25);
     }
     .scene-card .icon {
@@ -205,10 +205,12 @@
   </script>
   <script>
   (function(){
-    if (!location.hash) return;
-    var el = document.getElementById(location.hash.slice(1));
+    var id = sessionStorage.getItem('starseed-scroll');
+    if (!id) return;
+    sessionStorage.removeItem('starseed-scroll');
+    var el = document.getElementById(id);
     if (!el) return;
-    // Start at top, then smooth-scroll to the card
+    el.classList.add('scroll-target');
     history.scrollRestoration = 'manual';
     window.scrollTo(0, 0);
     requestAnimationFrame(function(){
