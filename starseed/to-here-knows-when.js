@@ -37,16 +37,21 @@ const vertexShader = `
     float sinkY = cos(uTime * 0.005 + aNode * 3.0) * uWeight * 0.08;
 
     // Bioluminescence: audio-reactive expansion pulses
-    float pulse = gAmp * uBioluminescence * 0.25 * sin(uTime * 0.015 + aPhase);
+    float pulse = (0.25 + gAmp * 0.75) * uBioluminescence * 0.25 * sin(uTime * 0.015 + aPhase);
 
     // Current: lateral drift — water movement
     float drift = sin(uTime * 0.01 + aDepth * 4.0 + aNode * 2.0) * uCurrent * 0.2;
     float driftZ = cos(uTime * 0.007 + aPhase * 1.5) * uCurrent * 0.1;
 
+    // Always-on slow wander
+    float wanderX = sin(uTime * 0.016 + aPhase * 3.2 + aNode * 4.7) * 0.10;
+    float wanderY = cos(uTime * 0.012 + aNode * 3.8 + aPhase * 2.1) * 0.08;
+    float wanderZ = sin(uTime * 0.009 + aDepth * 2.5 + aNode * 3.4) * 0.06;
+
     vec3 newPos = position;
-    newPos.x += drift + pulse;
-    newPos.y += sink - sinkY + gAmp2 * uBioluminescence * 0.1;
-    newPos.z += driftZ;
+    newPos.x += drift + pulse + wanderX;
+    newPos.y += sink - sinkY + wanderY + (0.25 + gAmp2 * 0.75) * uBioluminescence * 0.1;
+    newPos.z += driftZ + wanderZ;
 
     vNode = aNode;
     vFreqAmp = gAmp;
@@ -246,13 +251,14 @@ function animate() {
   const TP = Math.PI * 2;
   for (const k in driftCycles) { const { period, depth } = driftCycles[k]; const sd = depth * (0.3 + bakedFlux * 1.4); const d = (Math.sin(elapsed * TP / period) * 0.65 + Math.sin(elapsed * TP / (period * 2.17) + 1.3) * 0.35) * sd; uniforms[uMap[k]].value = Math.max(0.01, seedCenter[k] * (arc[k] || 1) * (1 + d)); }
   if (analyser && dataArray) { analyser.getByteFrequencyData(dataArray); for (let i = 0; i < 64; i++) frequencyUniform[i] = dataArray[i]; }
-  const driftAmt = 0.04 * (0.4 + bakedFlux * 0.7);
+  const driftAmt = 0.15 * (0.4 + bakedFlux * 0.8);
   particles.position.x = Math.sin(elapsed * TP / (DRIFT_BASE * 2.5)) * driftAmt;
-  particles.position.y = Math.sin(elapsed * TP / (DRIFT_BASE * 2.0) + 1.7) * driftAmt * 0.5;
-  const breathe = 1.0 + Math.sin(elapsed * TP / (DRIFT_BASE * 3.0)) * 0.03 * (arc.rot || 1);
+  particles.position.y = Math.sin(elapsed * TP / (DRIFT_BASE * 2.0) + 1.7) * driftAmt * 0.6;
+  particles.position.z = Math.sin(elapsed * TP / (DRIFT_BASE * 3.0) + 0.9) * driftAmt * 0.4;
+  const breathe = 1.0 + Math.sin(elapsed * TP / (DRIFT_BASE * 3.0)) * 0.09 * (arc.rot || 1);
   particles.scale.setScalar(breathe);
-  particles.rotation.y = elapsed * rotSpeedY * (arc.rot || 1) * 0.08;
-  particles.rotation.x = elapsed * rotSpeedX * 0.15 * (arc.rot || 1) * 0.08;
+  particles.rotation.y = elapsed * rotSpeedY * (arc.rot || 1) * 0.35;
+  particles.rotation.x = elapsed * rotSpeedX * 0.15 * (arc.rot || 1) * 0.35;
   renderer.render(scene, camera);
 }
 

@@ -35,9 +35,9 @@ const vertexShader = `
     float trem = sin(uTime * (0.08 + uTremolo * 0.15) + aNode * 4.0 + aPhase) * 0.5 + 0.5;
 
     // Feedback: positions fold back on themselves — neighboring nodes pull
-    float fbX = sin(position.y * 2.0 + uTime * 0.03 + aPhase) * uFeedback * 0.25 * gAmp;
-    float fbY = cos(position.x * 1.8 + uTime * 0.025 - aNode * 3.0) * uFeedback * 0.2 * gAmp2;
-    float fbZ = sin(position.z * 1.5 + uTime * 0.02 + aPhase * 0.7) * uFeedback * 0.15 * gAmp;
+    float fbX = sin(position.y * 2.0 + uTime * 0.03 + aPhase) * uFeedback * 0.25 * (0.25 + gAmp * 0.75);
+    float fbY = cos(position.x * 1.8 + uTime * 0.025 - aNode * 3.0) * uFeedback * 0.2 * (0.25 + gAmp2 * 0.75);
+    float fbZ = sin(position.z * 1.5 + uTime * 0.02 + aPhase * 0.7) * uFeedback * 0.15 * (0.25 + gAmp * 0.75);
 
     // Saturation: soft-clip displacement — compresses peaks, widens field
     float rawDisp = (gAmp * 0.5 + gAmp2 * 0.5) * 0.4;
@@ -48,10 +48,15 @@ const vertexShader = `
     float wow = sin(uTime * 0.02 + aNode * 2.3) * uTapeHead * 0.12;
     float flutter = sin(uTime * 0.4 + aPhase * 5.0) * uTapeHead * 0.02 * gAmp;
 
+    // Always-on slow wander
+    float wanderX = sin(uTime * 0.018 + aPhase * 3.5 + aNode * 5.0) * 0.12;
+    float wanderY = cos(uTime * 0.013 + aNode * 4.2 + aPhase * 2.3) * 0.09;
+    float wanderZ = sin(uTime * 0.010 + aPhase * 1.7 + aNode * 3.1) * 0.06;
+
     vec3 newPos = position;
-    newPos.x += fbX + wow * 0.3 + flutter;
-    newPos.y += fbY + saturated * 0.3 + sin(uTime * 0.015 + aNode * 1.7) * 0.04;
-    newPos.z += fbZ + wow * 0.2;
+    newPos.x += fbX + wow * 0.3 + flutter + wanderX;
+    newPos.y += fbY + saturated * 0.3 + sin(uTime * 0.015 + aNode * 1.7) * 0.04 + wanderY;
+    newPos.z += fbZ + wow * 0.2 + wanderZ;
 
     vNode = aNode;
     vFreqAmp = gAmp;
@@ -252,13 +257,14 @@ function animate() {
   const TP = Math.PI * 2;
   for (const k in driftCycles) { const { period, depth } = driftCycles[k]; const sd = depth * (0.3 + bakedFlux * 1.4); const d = (Math.sin(elapsed * TP / period) * 0.65 + Math.sin(elapsed * TP / (period * 2.17) + 1.3) * 0.35) * sd; uniforms[uMap[k]].value = Math.max(0.01, seedCenter[k] * (arc[k] || 1) * (1 + d)); }
   if (analyser && dataArray) { analyser.getByteFrequencyData(dataArray); for (let i = 0; i < 64; i++) frequencyUniform[i] = dataArray[i]; }
-  const driftAmt = 0.06 * (0.4 + bakedFlux * 0.8);
+  const driftAmt = 0.18 * (0.4 + bakedFlux * 0.8);
   particles.position.x = Math.sin(elapsed * TP / (DRIFT_BASE * 2.0)) * driftAmt;
   particles.position.y = Math.sin(elapsed * TP / (DRIFT_BASE * 1.6) + 1.7) * driftAmt * 0.7;
-  const breathe = 1.0 + Math.sin(elapsed * TP / (DRIFT_BASE * 2.5)) * 0.04 * (arc.rot || 1);
+  particles.position.z = Math.sin(elapsed * TP / (DRIFT_BASE * 2.8) + 0.9) * driftAmt * 0.4;
+  const breathe = 1.0 + Math.sin(elapsed * TP / (DRIFT_BASE * 2.5)) * 0.09 * (arc.rot || 1);
   particles.scale.setScalar(breathe);
-  particles.rotation.y = elapsed * rotSpeedY * (arc.rot || 1) * 0.15;
-  particles.rotation.x = elapsed * rotSpeedX * 0.2 * (arc.rot || 1) * 0.15;
+  particles.rotation.y = elapsed * rotSpeedY * (arc.rot || 1) * 0.35;
+  particles.rotation.x = elapsed * rotSpeedX * 0.2 * (arc.rot || 1) * 0.35;
   renderer.render(scene, camera);
 }
 

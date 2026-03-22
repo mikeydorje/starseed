@@ -41,15 +41,20 @@ const vertexShader = `
     float windZ = cos(uTime * 0.007 + aPhase * 1.5 + aTrajectory * 2.0) * uBreeze * 0.1;
 
     // Lift: upward pull — light rising
-    float rise = gAmp * uLift * 0.12 + sin(uTime * 0.005 + aPhase) * uLift * 0.06;
+    float rise = (0.25 + gAmp * 0.75) * uLift * 0.12 + sin(uTime * 0.005 + aPhase) * uLift * 0.06;
 
     // Ephemeral: fading presence — particles dissolve position
-    float fade = sin(uTime * 0.004 + aNode * 6.0) * uEphemeral * 0.08 * gAmp2;
+    float fade = sin(uTime * 0.004 + aNode * 6.0) * uEphemeral * 0.08 * (0.25 + gAmp2 * 0.75);
+
+    // Always-on slow wander
+    float wanderX = sin(uTime * 0.019 + aPhase * 3.6 + aNode * 5.2) * 0.11;
+    float wanderY = cos(uTime * 0.014 + aNode * 4.0 + aPhase * 2.2) * 0.09;
+    float wanderZ = sin(uTime * 0.011 + aTrajectory * 2.4 + aNode * 3.3) * 0.06;
 
     vec3 newPos = position;
-    newPos.x += outward + wind + fade;
-    newPos.y += outwardY + rise;
-    newPos.z += windZ;
+    newPos.x += outward + wind + fade + wanderX;
+    newPos.y += outwardY + rise + wanderY;
+    newPos.z += windZ + wanderZ;
 
     vNode = aNode;
     vFreqAmp = gAmp;
@@ -270,13 +275,14 @@ function animate() {
   const TP = Math.PI * 2;
   for (const k in driftCycles) { const { period, depth } = driftCycles[k]; const sd = depth * (0.3 + bakedFlux * 1.4); const d = (Math.sin(elapsed * TP / period) * 0.65 + Math.sin(elapsed * TP / (period * 2.17) + 1.3) * 0.35) * sd; uniforms[uMap[k]].value = Math.max(0.01, seedCenter[k] * (arc[k] || 1) * (1 + d)); }
   if (analyser && dataArray) { analyser.getByteFrequencyData(dataArray); for (let i = 0; i < 64; i++) frequencyUniform[i] = dataArray[i]; }
-  const driftAmt = 0.05 * (0.4 + bakedFlux * 0.8);
+  const driftAmt = 0.16 * (0.4 + bakedFlux * 0.8);
   particles.position.x = Math.sin(elapsed * TP / (DRIFT_BASE * 2.0)) * driftAmt;
   particles.position.y = Math.sin(elapsed * TP / (DRIFT_BASE * 1.7) + 1.7) * driftAmt * 0.7;
-  const breathe = 1.0 + Math.sin(elapsed * TP / (DRIFT_BASE * 2.8)) * 0.035 * (arc.rot || 1);
+  particles.position.z = Math.sin(elapsed * TP / (DRIFT_BASE * 2.5) + 0.9) * driftAmt * 0.4;
+  const breathe = 1.0 + Math.sin(elapsed * TP / (DRIFT_BASE * 2.8)) * 0.09 * (arc.rot || 1);
   particles.scale.setScalar(breathe);
-  particles.rotation.y = elapsed * rotSpeedY * (arc.rot || 1) * 0.08;
-  particles.rotation.x = elapsed * rotSpeedX * 0.12 * (arc.rot || 1) * 0.08;
+  particles.rotation.y = elapsed * rotSpeedY * (arc.rot || 1) * 0.35;
+  particles.rotation.x = elapsed * rotSpeedX * 0.12 * (arc.rot || 1) * 0.35;
   renderer.render(scene, camera);
 }
 

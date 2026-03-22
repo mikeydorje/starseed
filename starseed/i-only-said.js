@@ -33,23 +33,28 @@ const vertexShader = `
     float gAmp2 = (max(amp2 - gate, 0.0) / max(1.0 - gate, 0.01)) * VIS_INPUT_GAIN;
 
     // Whisper: barely-there position shift — quiet, intimate
-    float w = sin(uTime * 0.012 + aPhase * 3.0) * uWhisper * 0.08 * gAmp;
+    float w = sin(uTime * 0.012 + aPhase * 3.0) * uWhisper * 0.08 * (0.25 + gAmp * 0.75);
     float wY = cos(uTime * 0.009 + aNode * 4.0) * uWhisper * 0.06;
 
     // Frost: crystalline snap — sharp, icy audio-reactive snap
-    float snap = gAmp * uFrost * 0.15 * sin(aPhase * 5.0 + uTime * 0.02);
+    float snap = (0.25 + gAmp * 0.75) * uFrost * 0.15 * sin(aPhase * 5.0 + uTime * 0.02);
 
     // Brittleness: grid distortion — the lattice breaks apart softly
     float crack = sin(uTime * 0.006 + aNode * 7.0 + aPhase * 2.0) * uBrittleness * 0.12;
     float crackZ = cos(uTime * 0.005 + aNeighbor * 3.0) * uBrittleness * 0.08;
 
     // Echo: neighbor interference — lattice coherence
-    float echo = sin(uTime * 0.01 + aNeighbor * 5.0) * uEcho * 0.1 * gAmp2;
+    float echo = sin(uTime * 0.01 + aNeighbor * 5.0) * uEcho * 0.1 * (0.25 + gAmp2 * 0.75);
+
+    // Always-on slow wander
+    float wanderX = sin(uTime * 0.015 + aPhase * 3.8 + aNode * 4.5) * 0.10;
+    float wanderY = cos(uTime * 0.011 + aNode * 3.6 + aPhase * 2.5) * 0.08;
+    float wanderZ = sin(uTime * 0.008 + aNeighbor * 2.8 + aNode * 3.2) * 0.05;
 
     vec3 newPos = position;
-    newPos.x += w + snap + echo;
-    newPos.y += wY + crack;
-    newPos.z += crackZ;
+    newPos.x += w + snap + echo + wanderX;
+    newPos.y += wY + crack + wanderY;
+    newPos.z += crackZ + wanderZ;
 
     vNode = aNode;
     vFreqAmp = gAmp;
@@ -271,13 +276,14 @@ function animate() {
   const TP = Math.PI * 2;
   for (const k in driftCycles) { const { period, depth } = driftCycles[k]; const sd = depth * (0.3 + bakedFlux * 1.4); const d = (Math.sin(elapsed * TP / period) * 0.65 + Math.sin(elapsed * TP / (period * 2.17) + 1.3) * 0.35) * sd; uniforms[uMap[k]].value = Math.max(0.01, seedCenter[k] * (arc[k] || 1) * (1 + d)); }
   if (analyser && dataArray) { analyser.getByteFrequencyData(dataArray); for (let i = 0; i < 64; i++) frequencyUniform[i] = dataArray[i]; }
-  const driftAmt = 0.03 * (0.4 + bakedFlux * 0.6);
+  const driftAmt = 0.12 * (0.4 + bakedFlux * 0.8);
   particles.position.x = Math.sin(elapsed * TP / (DRIFT_BASE * 2.8)) * driftAmt;
-  particles.position.y = Math.sin(elapsed * TP / (DRIFT_BASE * 2.2) + 1.7) * driftAmt * 0.5;
-  const breathe = 1.0 + Math.sin(elapsed * TP / (DRIFT_BASE * 3.5)) * 0.025 * (arc.rot || 1);
+  particles.position.y = Math.sin(elapsed * TP / (DRIFT_BASE * 2.2) + 1.7) * driftAmt * 0.6;
+  particles.position.z = Math.sin(elapsed * TP / (DRIFT_BASE * 3.2) + 0.9) * driftAmt * 0.35;
+  const breathe = 1.0 + Math.sin(elapsed * TP / (DRIFT_BASE * 3.5)) * 0.08 * (arc.rot || 1);
   particles.scale.setScalar(breathe);
-  particles.rotation.y = elapsed * rotSpeedY * (arc.rot || 1) * 0.08;
-  particles.rotation.x = elapsed * rotSpeedX * 0.12 * (arc.rot || 1) * 0.08;
+  particles.rotation.y = elapsed * rotSpeedY * (arc.rot || 1) * 0.35;
+  particles.rotation.x = elapsed * rotSpeedX * 0.12 * (arc.rot || 1) * 0.35;
   renderer.render(scene, camera);
 }
 
