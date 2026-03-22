@@ -3,23 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Filament</title>
+  <title>Lattice</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #020208; min-height: 100vh; min-height: 100dvh; }
+    body { background: #040406; min-height: 100vh; min-height: 100dvh; }
     canvas { display: block; }
-    #controls { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Segoe UI', sans-serif; color: #ccc; background: rgba(6, 8, 18, 0.8); backdrop-filter: blur(10px); padding: 24px 20px; overflow-y: auto; transition: opacity 0.4s }
+    #controls { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Segoe UI', sans-serif; color: #ccc; background: rgba(8, 8, 14, 0.8); backdrop-filter: blur(10px); padding: 24px 20px; overflow-y: auto; transition: opacity 0.4s }
     #controls.locked { pointer-events: none; opacity: 0.35; }
     #controls h2 {
       font-size: 13px; text-transform: uppercase; letter-spacing: 2px;
-      color: #445; margin-bottom: 16px; font-weight: 500;
+      color: #556; margin-bottom: 16px; font-weight: 500;
     }
     .param { margin-bottom: 14px; }
     .param label {
       display: flex; justify-content: space-between; align-items: baseline;
       font-size: 13px; margin-bottom: 5px;
     }
-    .param label span.name { color: #7ab0d8; font-weight: 600; }
+    .param label span.name { color: #8a90b0; font-weight: 600; }
     .param label span.val { color: #555; font-size: 11px; font-variant-numeric: tabular-nums; }
     .param input[type=range] {
       -webkit-appearance: none; appearance: none; width: 100%; height: 4px;
@@ -27,8 +27,8 @@
     }
     .param input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none; appearance: none; width: 14px; height: 14px;
-      border-radius: 50%; background: #5090c0; cursor: pointer;
-      box-shadow: 0 0 6px rgba(80,144,192,0.4);
+      border-radius: 50%; background: #6068a0; cursor: pointer;
+      box-shadow: 0 0 6px rgba(96,104,160,0.4);
     }
     #file-input { display: none; }
     .upload-btn {
@@ -36,13 +36,13 @@
       margin-top: 18px; width: 100%; padding: 12px 0;
       font-family: inherit; font-size: 13px; font-weight: 600;
       letter-spacing: 1px; text-transform: uppercase;
-      color: #a0c8e8; background: linear-gradient(135deg, rgba(80,144,192,0.25), rgba(50,100,150,0.12));
-      border: 1px solid rgba(80,144,192,0.3); border-radius: 10px;
+      color: #a0a8d0; background: linear-gradient(135deg, rgba(96,104,160,0.25), rgba(70,75,130,0.12));
+      border: 1px solid rgba(96,104,160,0.3); border-radius: 10px;
       cursor: pointer; transition: all 0.3s ease;
     }
     .upload-btn:hover {
-      background: linear-gradient(135deg, rgba(80,144,192,0.4), rgba(50,100,150,0.25));
-      border-color: rgba(80,144,192,0.55); box-shadow: 0 0 16px rgba(80,144,192,0.2);
+      background: linear-gradient(135deg, rgba(96,104,160,0.4), rgba(70,75,130,0.25));
+      border-color: rgba(96,104,160,0.55); box-shadow: 0 0 16px rgba(96,104,160,0.2);
       color: #fff;
     }
     .upload-btn svg { width: 16px; height: 16px; }
@@ -54,13 +54,13 @@
     #fs-btn {
       position: fixed; bottom: 16px; right: 16px; z-index: 20;
       width: 36px; height: 36px; padding: 0;
-      background: rgba(6, 8, 18, 0.5); border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(8, 8, 14, 0.5); border: 1px solid rgba(255,255,255,0.08);
       border-radius: 8px; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       color: rgba(255,255,255,0.35); transition: all 0.3s ease;
       backdrop-filter: blur(6px);
     }
-    #fs-btn:hover { color: #fff; background: rgba(80,144,192,0.3); border-color: rgba(80,144,192,0.4); }
+    #fs-btn:hover { color: #fff; background: rgba(96,104,160,0.3); border-color: rgba(96,104,160,0.4); }
     #fs-btn svg { width: 18px; height: 18px; }
     #audio-ready { text-align: center; }
     .audio-filename { display: block; color: rgba(255,255,255,0.5); font-size: 11px; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; margin-left: auto; margin-right: auto; }
@@ -99,52 +99,52 @@
 <body>
   <div id="controls">
     <div class="controls-inner">
-    <h2>filament</h2>
+    <h2>lattice</h2>
 
     <div class="param">
-      <label><span class="name">⊸ Tension</span><span class="val" id="p1-val">50</span></label>
-      <div class="desc">Strand tension</div>
+      <label><span class="name">⬡ Bond</span><span class="val" id="p1-val">50</span></label>
+      <div class="desc">Displacement force</div>
       <input type="range" id="p1" min="0" max="100" value="50" />
     </div>
 
     <div class="param">
-      <label><span class="name">∿ Weave</span><span class="val" id="p2-val">40</span></label>
-      <div class="desc">Lateral undulation</div>
-      <input type="range" id="p2" min="0" max="100" value="40" />
+      <label><span class="name">◇ Symmetry</span><span class="val" id="p2-val">50</span></label>
+      <div class="desc">Grid regularity</div>
+      <input type="range" id="p2" min="0" max="100" value="50" />
     </div>
 
     <div class="param">
-      <label><span class="name">⫴ Density</span><span class="val" id="p3-val">50</span></label>
-      <div class="desc">Strand density</div>
-      <input type="range" id="p3" min="1" max="100" value="50" />
+      <label><span class="name">⊞ Facet</span><span class="val" id="p3-val">50</span></label>
+      <div class="desc">Grid density</div>
+      <input type="range" id="p3" min="0" max="100" value="50" />
     </div>
 
     <div class="param">
-      <label><span class="name">⟿ Impulse</span><span class="val" id="p4-val">45</span></label>
-      <div class="desc">Pulse speed</div>
+      <label><span class="name">≋ Resonance</span><span class="val" id="p4-val">45</span></label>
+      <div class="desc">Standing waves</div>
       <input type="range" id="p4" min="0" max="100" value="45" />
     </div>
 
     <div class="param">
-      <label><span class="name">◈ Spectrum</span><span class="val" id="p5-val">50</span></label>
-      <div class="desc">Color tone</div>
+      <label><span class="name">◈ Lustre</span><span class="val" id="p5-val">50</span></label>
+      <div class="desc">Color temperature</div>
       <input type="range" id="p5" min="0" max="100" value="50" />
     </div>
 
     <div class="param">
-      <label><span class="name">⊘ Noise Floor</span><span class="val" id="p7-val">50</span></label>
+      <label><span class="name">⊘ Clarity</span><span class="val" id="p7-val">50</span></label>
       <div class="desc">Silence gate</div>
       <input type="range" id="p7" min="0" max="100" value="50" />
     </div>
 
     <div class="param">
-      <label><span class="name">↭ Wander</span><span class="val" id="p8-val">45</span></label>
+      <label><span class="name">✧︎ Shimmer</span><span class="val" id="p8-val">45</span></label>
       <div class="desc">Parameter drift</div>
       <input type="range" id="p8" min="0" max="100" value="45" />
     </div>
 
     <div class="param">
-      <label><span class="name">⧗ Narrative</span><span class="val" id="p6-val">55</span></label>
+      <label><span class="name">⧗ Memory</span><span class="val" id="p6-val">55</span></label>
       <div class="desc">Narrative arc · not in listen mode</div>
       <input type="range" id="p6" min="0" max="100" value="55" />
     </div>
@@ -168,11 +168,11 @@
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="audio-store.js"></script>
-  <script src="filament.js"></script>
+  <script src="lattice.js"></script>
   <script src="recorder.js"></script>
   <script src="info-box.js"></script>
   <script src="mic-input.js"></script>
-  <a id="back-btn" href="index.html" onclick="sessionStorage.setItem('starseed-scroll','filament')">← Scenes</a>
+  <a id="back-btn" href="./" onclick="sessionStorage.setItem('starseed-scroll','lattice')">← Scenes</a>
   <button id="fs-btn" title="Toggle fullscreen">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
       <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
