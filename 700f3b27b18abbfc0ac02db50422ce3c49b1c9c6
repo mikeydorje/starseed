@@ -1,0 +1,23 @@
+index.html
+  2b3360eed7e3abde 5-6,9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.17",
+  "base_commit_sha": "700f3b27b18abbfc0ac02db50422ce3c49b1c9c6",
+  "prompts": {
+    "2b3360eed7e3abde": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "338b62d1-3d6e-4b19-9d5c-e89396ff1819",
+        "model": "unknown"
+      },
+      "human_author": "Mikey Dorje <mikeydorje@gmail.com>",
+      "messages": [],
+      "total_additions": 11,
+      "total_deletions": 0,
+      "accepted_lines": 11,
+      "overriden_lines": 0
+    }
+  }
+}
