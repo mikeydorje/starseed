@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Controls</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%23222'/%3E%3Cg stroke='%23333' stroke-width='1.2' stroke-linecap='round'%3E%3Cline x1='16' y1='2' x2='16' y2='10'/%3E%3Cline x1='16' y1='22' x2='16' y2='30'/%3E%3Cline x1='2' y1='16' x2='10' y2='16'/%3E%3Cline x1='22' y1='16' x2='30' y2='16'/%3E%3Cline x1='6.1' y1='6.1' x2='11.8' y2='11.8'/%3E%3Cline x1='20.2' y1='20.2' x2='25.9' y2='25.9'/%3E%3Cline x1='25.9' y1='6.1' x2='20.2' y2='11.8'/%3E%3Cline x1='11.8' y1='20.2' x2='6.1' y2='25.9'/%3E%3C/g%3E%3C/svg%3E" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a10; min-height: 100vh;
+      font-family: 'Segoe UI', sans-serif; color: #ccc;
+      padding: 20px 16px; overflow-y: auto;
+    }
+    h2 {
+      font-size: 13px; text-transform: uppercase; letter-spacing: 2px;
+      margin-bottom: 16px; font-weight: 500; text-align: center;
+    }
+    .param { margin-bottom: 14px; }
+    .param label {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 13px; margin-bottom: 5px;
+    }
+    .param label span.name { font-weight: 600; }
+    .param label span.val {
+      color: #555; font-size: 11px; font-variant-numeric: tabular-nums;
+    }
+    .param .desc {
+      font-size: 10px; color: #555; margin-bottom: 4px; line-height: 1.3;
+      font-style: italic;
+    }
+    .param input[type=range] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 4px; border-radius: 2px;
+      background: rgba(255,255,255,0.08); outline: none;
+    }
+    .param input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 14px; height: 14px; border-radius: 50%;
+      cursor: pointer;
+    }
+    #randomize-btn {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      width: 100%; padding: 8px 0; margin-top: 8px; margin-bottom: 16px;
+      font-family: inherit; font-size: 11px; font-weight: 500;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: rgba(255,255,255,0.35); background: none;
+      border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;
+      cursor: pointer; transition: all 0.3s;
+    }
+    #randomize-btn:hover {
+      color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.04);
+    }
+    .vj-sep {
+      height: 1px; background: rgba(255,255,255,0.06); margin: 12px 0;
+    }
+    .vj-fmt-row {
+      display: flex; gap: 4px; align-items: center; flex-wrap: wrap; margin-bottom: 8px;
+    }
+    .vj-fmt-btn {
+      height: 28px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center;
+      font-family: 'Segoe UI', sans-serif; font-size: 10px;
+      letter-spacing: 0.5px; color: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 5px; cursor: pointer; transition: all 0.3s; line-height: 1;
+    }
+    .vj-fmt-btn:hover { color: rgba(255,255,255,0.6); border-color: rgba(255,255,255,0.15); }
+    .vj-fmt-btn.active { color: #b8b0e8; border-color: rgba(123,111,219,0.4); background: rgba(123,111,219,0.15); }
+    .vj-zoom-row {
+      display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
+      font-size: 10px; color: rgba(255,255,255,0.35); letter-spacing: 0.5px;
+    }
+    .vj-zoom-label { white-space: nowrap; min-width: 38px; }
+    .vj-zoom-slider {
+      flex: 1; height: 3px; -webkit-appearance: none; appearance: none;
+      background: rgba(255,255,255,0.12); border-radius: 2px; outline: none; cursor: pointer;
+    }
+    .vj-zoom-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 10px; height: 10px;
+      border-radius: 50%; background: #e8c080; cursor: pointer;
+    }
+    .vj-zoom-slider::-moz-range-thumb {
+      width: 10px; height: 10px; border: none;
+      border-radius: 50%; background: #e8c080; cursor: pointer;
+    }
+    .vj-bd-row { display: flex; align-items: center; gap: 6px; }
+    .vj-bd-toggle {
+      height: 28px; width: 28px; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 5px; cursor: pointer; transition: all 0.3s; color: rgba(255,255,255,0.25);
+    }
+    .vj-bd-toggle:hover { color: rgba(255,255,255,0.6); border-color: rgba(255,255,255,0.15); }
+    .vj-bd-toggle.active { color: #b8b0e8; border-color: rgba(123,111,219,0.4); background: rgba(123,111,219,0.15); }
+    .vj-bd-toggle svg { width: 14px; height: 14px; }
+    .vj-bd-label { font-size: 10px; color: rgba(255,255,255,0.25); letter-spacing: 0.5px; }
+    /* WIP: fullscreen toggle button — revisit for dual-monitor workflow
+    .vj-fs-btn {
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      width: 100%; padding: 7px 0; margin-top: 12px;
+      font-family: inherit; font-size: 10px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: rgba(255,255,255,0.3); background: none;
+      border: 1px solid rgba(255,255,255,0.06); border-radius: 6px;
+      cursor: pointer; transition: all 0.3s;
+    }
+    .vj-fs-btn:hover { color: rgba(255,255,255,0.6); border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); }
+    .vj-fs-btn svg { width: 12px; height: 12px; }
+    */
+    #status {
+      text-align: center; color: rgba(255,255,255,0.3);
+      font-size: 11px; margin-top: 12px;
+    }
+    #close-btn {
+      display: block; width: 100%; padding: 8px 0; margin-top: 18px;
+      font-family: inherit; font-size: 11px; font-weight: 500;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: rgba(255,255,255,0.25); background: none;
+      border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;
+      cursor: pointer; transition: all 0.3s;
+    }
+    #close-btn:hover { color: rgba(255,255,255,0.5); border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); }
+    #lost-msg {
+      display: none; text-align: center; margin-top: 40px;
+      color: rgba(255,100,100,0.7); font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div id="controls-container"></div>
+  <div id="lost-msg">Visualizer window closed.</div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    /* ── Accent color lookup by scene ── */
+    var accentMap = {
+      'smbh':              { fg: '#b8b0e8', glow: 'rgba(123,111,219,0.5)' },
+      'lotus':             { fg: '#c4a0b0', glow: 'rgba(196,122,144,0.5)' },
+      'ember':             { fg: '#b8a078', glow: 'rgba(160,128,80,0.4)' },
+      'filament':          { fg: '#7ab0d8', glow: 'rgba(80,144,192,0.4)' },
+      'spore':             { fg: '#6ab07a', glow: 'rgba(74,144,96,0.4)' },
+      'lattice':           { fg: '#8a90b0', glow: 'rgba(96,104,160,0.4)' },
+      'sakura':            { fg: '#d4a0b8', glow: 'rgba(232,160,184,0.5)' },
+      'pi':                { fg: '#9088c0', glow: 'rgba(112,96,176,0.4)' },
+      'tau':               { fg: '#c09050', glow: 'rgba(160,128,64,0.4)' },
+      'phi':               { fg: '#80a050', glow: 'rgba(96,144,64,0.4)' },
+      'euler':             { fg: '#c06040', glow: 'rgba(160,64,48,0.4)' },
+      'feigenbaum':        { fg: '#9050b0', glow: 'rgba(128,64,160,0.4)' },
+      'mathematical-pony': { fg: '#e080c0', glow: 'rgba(255,96,200,0.4)' },
+      'only-shallow':      { fg: '#e06050', glow: 'rgba(255,60,40,0.4)' },
+      'to-here-knows-when':{ fg: '#8070b0', glow: 'rgba(100,80,180,0.4)' },
+      'blown-a-wish':      { fg: '#80a058', glow: 'rgba(120,170,80,0.4)' },
+      'i-only-said':       { fg: '#7888a8', glow: 'rgba(120,136,168,0.4)' },
+      'sometimes':         { fg: '#b08840', glow: 'rgba(180,140,60,0.4)' },
+    };
+
+    function getAccent(name) {
+      return accentMap[name] || { fg: '#b8b0e8', glow: 'rgba(184,176,232,0.5)' };
+    }
+
+    /* ── Connect to opener ── */
+    var opener = window.opener;
+    if (!opener || !opener.SCENE) {
+      document.getElementById('lost-msg').style.display = 'block';
+      return;
+    }
+
+    var S = opener.SCENE;
+    var accent = getAccent(S.sceneName);
+
+    /* Apply accent to stylesheet */
+    var style = document.createElement('style');
+    style.textContent =
+      '.param label span.name { color: ' + accent.fg + ' }' +
+      '.param input[type=range]::-webkit-slider-thumb { background: ' + accent.fg + '; box-shadow: 0 0 6px ' + accent.glow + ' }' +
+      'h2 { color: ' + accent.fg + ' }' +
+      '.vj-zoom-slider::-webkit-slider-thumb { background: ' + accent.fg + '; box-shadow: 0 0 6px ' + accent.glow + ' }' +
+      '.vj-zoom-slider::-moz-range-thumb { background: ' + accent.fg + '; box-shadow: 0 0 6px ' + accent.glow + ' }' +
+      '.vj-zoom-label { color: ' + accent.fg + ' }';
+    document.head.appendChild(style);
+
+    /* ── Scrape slider metadata from opener DOM ── */
+    var container = document.getElementById('controls-container');
+    var openerParams = opener.document.querySelectorAll('#controls .param');
+    var sliders = [];
+
+    /* Title */
+    var displayName = S.sceneName.replace(/-/g, ' ');
+    document.title = displayName;
+    var h2 = document.createElement('h2');
+    h2.textContent = displayName;
+    container.appendChild(h2);
+
+    for (var i = 0; i < openerParams.length; i++) {
+      var srcParam = openerParams[i];
+      var srcInput = srcParam.querySelector('input[type=range]');
+      if (!srcInput) continue;
+
+      var srcLabel = srcParam.querySelector('label');
+      var nameSpan = srcLabel ? srcLabel.querySelector('span.name') : null;
+      var descDiv = srcParam.querySelector('.desc');
+
+      var id = srcInput.id;              /* p1, p2, ... */
+      var labelText = nameSpan ? nameSpan.textContent : id;
+      var descText = descDiv ? descDiv.textContent : '';
+      var min = srcInput.min || '0';
+      var max = srcInput.max || '100';
+      var val = srcInput.value;
+
+      /* Build local slider */
+      var div = document.createElement('div');
+      div.className = 'param';
+
+      var label = document.createElement('label');
+      var ns = document.createElement('span');
+      ns.className = 'name';
+      ns.textContent = labelText;
+      var vs = document.createElement('span');
+      vs.className = 'val';
+      vs.textContent = val;
+      label.appendChild(ns);
+      label.appendChild(vs);
+      div.appendChild(label);
+
+      if (descText) {
+        var dd = document.createElement('div');
+        dd.className = 'desc';
+        dd.textContent = descText;
+        div.appendChild(dd);
+      }
+
+      var inp = document.createElement('input');
+      inp.type = 'range';
+      inp.min = min;
+      inp.max = max;
+      inp.value = val;
+      inp.dataset.target = id;
+      div.appendChild(inp);
+
+      container.appendChild(div);
+      sliders.push({ input: inp, valSpan: vs, targetId: id });
+    }
+
+    /* Randomize button */
+    var rBtn = document.createElement('button');
+    rBtn.id = 'randomize-btn';
+    rBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="14" height="14"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>Randomize';
+    container.appendChild(rBtn);
+
+    /* ── Separator ── */
+    var sep1 = document.createElement('div');
+    sep1.className = 'vj-sep';
+    container.appendChild(sep1);
+
+    /* ── Format preview buttons ── */
+    var FORMATS = [
+      { name: '16x9', label: '16:9',  width: 1920, height: 1080 },
+      { name: '1x1',  label: '1:1',   width: 1080, height: 1080 },
+      { name: '9x16', label: '9:16',  width: 1080, height: 1920 },
+    ];
+    var fmtRow = document.createElement('div');
+    fmtRow.className = 'vj-fmt-row';
+    var fmtBtns = [];
+    FORMATS.forEach(function(f) {
+      var btn = document.createElement('button');
+      btn.className = 'vj-fmt-btn';
+      btn.textContent = f.label;
+      btn.dataset.fmt = f.name;
+      btn.title = f.width + '\u00d7' + f.height + ' preview';
+      btn.addEventListener('click', function() {
+        try {
+          // Sync active state with opener's preview system
+          var panelBtns = opener.document.querySelectorAll('#ctrl-panel .fmt-prev-btn');
+          for (var k = 0; k < panelBtns.length; k++) {
+            if (panelBtns[k].dataset.fmt === f.name) { panelBtns[k].click(); break; }
+          }
+        } catch(e) {}
+        fmtBtns.forEach(function(b) { b.classList.toggle('active', b.dataset.fmt === f.name); });
+      });
+      fmtRow.appendChild(btn);
+      fmtBtns.push(btn);
+    });
+    container.appendChild(fmtRow);
+
+    // Sync initial active format from opener
+    try {
+      var activeFmt = opener.document.querySelector('#ctrl-panel .fmt-prev-btn.active');
+      if (activeFmt) {
+        fmtBtns.forEach(function(b) { b.classList.toggle('active', b.dataset.fmt === activeFmt.dataset.fmt); });
+      }
+    } catch(e) {}
+
+    /* ── Aperture Scale slider ── */
+    var zoomRow = document.createElement('div');
+    zoomRow.className = 'vj-zoom-row';
+    var zlLabel = document.createElement('span');
+    zlLabel.className = 'vj-zoom-label';
+    zlLabel.textContent = '\u23e3 50';
+    var zlSlider = document.createElement('input');
+    zlSlider.type = 'range';
+    zlSlider.className = 'vj-zoom-slider';
+    zlSlider.min = '0';
+    zlSlider.max = '100';
+    zlSlider.step = '1';
+    zlSlider.value = '50';
+    zlSlider.title = 'Aperture Scale';
+    // Sync initial value from opener's panel
+    try {
+      var openerZoom = opener.document.querySelector('#ctrl-panel .cp-zoom-slider');
+      if (openerZoom) {
+        zlSlider.value = openerZoom.value;
+        zlLabel.textContent = '\u23e3 ' + openerZoom.value;
+      }
+    } catch(e) {}
+    zlSlider.addEventListener('input', function() {
+      zlLabel.textContent = '\u23e3 ' + zlSlider.value;
+      try {
+        var opZoom = opener.document.querySelector('#ctrl-panel .cp-zoom-slider');
+        if (opZoom) {
+          opZoom.value = zlSlider.value;
+          opZoom.dispatchEvent(new Event('input'));
+        }
+      } catch(e) {}
+    });
+    zoomRow.appendChild(zlLabel);
+    zoomRow.appendChild(zlSlider);
+    container.appendChild(zoomRow);
+
+    /* ── Boundary toggle ── */
+    var bdOnSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>';
+    var bdOffSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="4 3"/></svg>';
+    var bdRow = document.createElement('div');
+    bdRow.className = 'vj-bd-row';
+    var bdBtn = document.createElement('button');
+    bdBtn.className = 'vj-bd-toggle active';
+    bdBtn.title = 'Toggle boundary';
+    bdBtn.innerHTML = bdOnSVG;
+    // Sync initial state from opener
+    try {
+      if (S.uniforms && S.uniforms.uBoundary && S.uniforms.uBoundary.value <= 0.5) {
+        bdBtn.classList.remove('active');
+        bdBtn.innerHTML = bdOffSVG;
+      }
+    } catch(e) {}
+    bdBtn.addEventListener('click', function() {
+      try {
+        if (!S.uniforms || !S.uniforms.uBoundary) return;
+        var on = S.uniforms.uBoundary.value > 0.5;
+        S.uniforms.uBoundary.value = on ? 0.0 : 1.0;
+        bdBtn.classList.toggle('active', !on);
+        bdBtn.innerHTML = on ? bdOffSVG : bdOnSVG;
+      } catch(e) {}
+    });
+    bdRow.appendChild(bdBtn);
+    var bdLabel = document.createElement('span');
+    bdLabel.className = 'vj-bd-label';
+    bdLabel.textContent = 'Boundary';
+    bdRow.appendChild(bdLabel);
+    container.appendChild(bdRow);
+
+    /* WIP: fullscreen toggle — revisit for dual-monitor workflow
+    var fsBtn = document.createElement('button');
+    fsBtn.className = 'vj-fs-btn';
+    fsBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>Fullscreen';
+    fsBtn.addEventListener('click', function() {
+      try {
+        var doc = opener.document;
+        if (doc.fullscreenElement) {
+          doc.exitFullscreen();
+        } else {
+          doc.documentElement.requestFullscreen();
+        }
+      } catch(e) {}
+    });
+    setInterval(function() {
+      try {
+        var isFS = !!opener.document.fullscreenElement;
+        fsBtn.innerHTML = isFS
+          ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="M14 10l7-7"/><path d="M3 21l7-7"/></svg>Exit Fullscreen'
+          : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>Fullscreen';
+      } catch(e) {}
+    }, 500);
+    container.appendChild(fsBtn);
+    */
+
+    /* Status */
+    var status = document.createElement('div');
+    status.id = 'status';
+    status.textContent = 'adjustments update in real time';
+    container.appendChild(status);
+
+    /* Close button */
+    var closeBtn = document.createElement('button');
+    closeBtn.id = 'close-btn';
+    closeBtn.textContent = 'Close';
+    closeBtn.addEventListener('click', function() { window.close(); });
+    container.appendChild(closeBtn);
+
+    /* ── Throttled apply (max once per frame) ── */
+    var applyPending = false;
+
+    function scheduleApply() {
+      if (applyPending) return;
+      applyPending = true;
+      requestAnimationFrame(function () {
+        applyPending = false;
+        try {
+          if (opener.closed) { onLost(); return; }
+          if (S.vjApply) S.vjApply();
+        } catch (e) { onLost(); }
+      });
+    }
+
+    /* ── Slider input → sync to opener DOM + apply ── */
+    for (var j = 0; j < sliders.length; j++) {
+      (function (sl) {
+        sl.input.addEventListener('input', function () {
+          sl.valSpan.textContent = sl.input.value;
+          try {
+            var target = opener.document.getElementById(sl.targetId);
+            if (target) {
+              target.value = sl.input.value;
+              /* Also update the val display in opener */
+              var openerVal = opener.document.getElementById(sl.targetId + '-val');
+              if (openerVal) openerVal.textContent = sl.input.value;
+            }
+          } catch (e) { /* cross-window access failed */ }
+          scheduleApply();
+        });
+      })(sliders[j]);
+    }
+
+    /* ── Randomize ── */
+    rBtn.addEventListener('click', function () {
+      for (var k = 0; k < sliders.length; k++) {
+        var sl = sliders[k];
+        var lo = parseInt(sl.input.min, 10);
+        var hi = parseInt(sl.input.max, 10);
+        var v = Math.floor(lo + Math.random() * (hi - lo));
+        sl.input.value = v;
+        sl.valSpan.textContent = v;
+        try {
+          var target = opener.document.getElementById(sl.targetId);
+          if (target) {
+            target.value = v;
+            var openerVal = opener.document.getElementById(sl.targetId + '-val');
+            if (openerVal) openerVal.textContent = v;
+          }
+        } catch (e) { /* */ }
+      }
+      scheduleApply();
+    });
+
+    /* ── Watch for opener closing ── */
+    function onLost() {
+      document.getElementById('controls-container').style.display = 'none';
+      document.getElementById('lost-msg').style.display = 'block';
+    }
+
+    /* ── Auto-fit window height to content ── */
+    try {
+      var chrome = window.outerHeight - window.innerHeight;
+      var desired = document.body.scrollHeight + chrome + 40;
+      window.resizeTo(340, Math.min(desired, screen.availHeight));
+    } catch (e) {}
+
+    setInterval(function () {
+      try {
+        if (!opener || opener.closed) onLost();
+      } catch (e) { onLost(); }
+    }, 1000);
+
+  })();
+  </script>
+</body>
+</html>
