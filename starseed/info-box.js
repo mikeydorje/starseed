@@ -1,7 +1,6 @@
-// --- Info Box: appears once on play, dismissable, "don't show again" persists ---
+// --- Info Box: disabled — content moved to index page "The Basics" section ---
 (function () {
-  const STORAGE_KEY = 'starseed-info-dismissed';
-  if (localStorage.getItem(STORAGE_KEY) === '1') return;
+  return;
 
   const style = document.createElement('style');
   style.textContent = `
