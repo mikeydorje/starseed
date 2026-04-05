@@ -91,7 +91,7 @@ const Recorder = (() => {
     return { real, imag };
   }
 
-  function preAnalyzeAudio(buffer, smoothing, onProgress, fps) {
+  function preAnalyzeAudio(buffer, smoothing, bassSmoothing, onProgress, fps) {
     fps = fps || FPS;
     const fftSize = 128;
     const bins = fftSize >> 1; // 64
@@ -118,6 +118,7 @@ const Recorder = (() => {
     // Between frames there are roughly (sampleRate/fftSize)/fps blocks.
     const blocksPerFrame = (buffer.sampleRate / fftSize) / fps;
     const effSmoothing = Math.pow(smoothing, blocksPerFrame);
+    const effBassSm = Math.pow(bassSmoothing, blocksPerFrame);
 
     const prevSmoothed = new Float64Array(bins);
     const minDB = -100, maxDB = -30, rangeDB = maxDB - minDB;
@@ -138,7 +139,8 @@ const Recorder = (() => {
       for (let i = 0; i < bins; i++) {
         const mag = Math.sqrt(real[i] * real[i] + imag[i] * imag[i]) / fftSize;
         const db = 20 * Math.log10(Math.max(mag, 1e-10));
-        const sm = effSmoothing * prevSmoothed[i] + (1 - effSmoothing) * db;
+        const eff = i < 2 ? effBassSm : effSmoothing;
+        const sm = eff * prevSmoothed[i] + (1 - eff) * db;
         prevSmoothed[i] = sm;
         byteData[i] = Math.max(0, Math.min(255, Math.round((sm - minDB) / rangeDB * 255)));
       }
@@ -1368,7 +1370,7 @@ const Recorder = (() => {
       const audioBase = (S && S.currentFileName) ? S.currentFileName.replace(/\.[^.]+$/, '') : '';
       dl.href = st.url;
       dl.download = (audioBase ? audioBase + '-' : '') + sceneName + '-' + name + '.mp4';
-      dl.textContent = '\u2b07 Download';
+      dl.textContent = '\u2b07\uFE0E Download';
       dl.className = 'rec-dl-btn visible';
     } else {
       dl.className = 'rec-dl-btn';
@@ -1409,11 +1411,12 @@ const Recorder = (() => {
         if (!S || !S.currentBuffer) { processing = false; return; }
         cachedConfig = snapshotConfig();
         cachedAudioBuffer = S.currentBuffer;
-        cachedSmoothing = S.analyser ? S.analyser.smoothingTimeConstant : 0.85;
+        cachedSmoothing = (S._sceneSm !== undefined) ? S._sceneSm : (S.analyser ? S.analyser.smoothingTimeConstant : 0.85);
+        const cachedBassSm = (S._bassSm !== undefined) ? S._bassSm : cachedSmoothing;
 
         setAnalyzeStatus('Pre-analyzing audio\u2026', true);
         await new Promise(r => setTimeout(r, 50));
-        cachedFrameData = preAnalyzeAudio(cachedAudioBuffer, cachedSmoothing);
+        cachedFrameData = preAnalyzeAudio(cachedAudioBuffer, cachedSmoothing, cachedBassSm);
         setAnalyzeStatus('Audio analysis complete', false);
       }
 

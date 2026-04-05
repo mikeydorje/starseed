@@ -208,7 +208,7 @@ Changes to `recorder.js`, `info-box.js`, or `audio-store.js` affect all 18 scene
 - **No git stage/commit/push without explicit user approval**
 - Static site only — no npm build, no transpilation, no bundler
 - All 18 scenes must stay structurally consistent
-- Use U+FE0E for all emoji-capable Unicode
+- Use U+FE0E for all emoji-capable Unicode — **nothing should ever render as an emoji**, always a single-color text symbol. Append `\uFE0E` (VS15 text presentation selector) to any codepoint that has emoji variants.
 - iOS file inputs need explicit extension + MIME lists (not `accept="audio/*"`)
 
 ## Known Issues

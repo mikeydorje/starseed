@@ -296,7 +296,7 @@
   <div class="about-grid">
   <div class="about">
     <h2>How it works</h2>
-    <p>Starseed is an <strong>audio-reactive visualizer</strong> — every particle on screen moves in direct response to your music. Drop in any audio file, and the <strong>Web Audio API</strong> splits the signal into 64 frequency bands in real time. Those bands push, pull, and reshape a cloud of particles driven by <strong>custom GPU shaders</strong> every frame. <em>Modern hardware handles this easily; older machines or low-power devices may drop frames or slow down.</em></p>
+    <p>Starseed is an <strong>audio-reactive visualizer</strong> — every particle on screen moves in direct response to your music. Drop in any audio file, and the <strong>Web Audio API</strong> splits the signal into 64 frequency bands in real time. Those bands push, pull, and reshape a cloud of particles driven by <strong>custom GPU shaders</strong> every frame. <em>Everything runs on your device's GPU — modern hardware handles this easily, but low-power devices may drop frames.</em></p>
     <p>Eight sliders per scene let you tune the physics: spread, drift, colour, threshold, and more. Aspect ratio, aperture scale, and boundary settings can dynamically alter the visuals in unique ways. A <strong>narrative arc</strong> slowly evolves the parameters over the length of the track so the visuals tell a story.</p>
     <p>Behind the scenes, slow <strong>drift cycles</strong> — long sine waves between 1 and 5 minutes — continually shift rotation and scale. Combined with the arc, this means no two plays look the same.</p>
     <p>Built with <strong>♡︎</strong>, <strong>Three.js</strong>, <strong>WebGL</strong>, and zero build tools — <strong>plain JavaScript and GPU shader math</strong>. No AI, no machine learning, no server-side processing. Just code, trigonometry, and your music on static files. Developed on Windows Subsystem for Linux.</p>
@@ -326,6 +326,11 @@
   <div class="version-history">
     <h2>Version History</h2>
     <p class="version-lead">Actively evolving — new scenes, features, and refinements ongoing.</p>
+    <div class="version-entry">
+      <h3>v1.1.0 — April 2026</h3>
+      <p><em>Improved low-end frequency response.</em></p>
+      <p>Per-band bass smoothing across all scenes and the offline recorder. Tighter kick and bass transients. Updated integration tests.</p>
+    </div>
     <div class="version-entry">
       <h3>v1.0.1 — April 2026</h3>
       <p><em>Integration tests and UI polish.</em></p>

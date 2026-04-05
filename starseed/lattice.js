@@ -313,6 +313,9 @@ let seedCenter = {
 let audioContext = null;
 let analyser = null;
 let dataArray = null;
+const _smoothedFreq = new Float32Array(64);
+let _sceneSm = 0.85;
+const _bassSm = 0.05;
 let source = null;
 let audioDuration = 0;
 let audioStartTime = 0;
@@ -321,7 +324,7 @@ function initAudio(smoothing) {
   audioContext = new (window.AudioContext || window.webkitAudioContext)();
   analyser = audioContext.createAnalyser();
   analyser.fftSize = 128;
-  analyser.smoothingTimeConstant = smoothing;
+  analyser.smoothingTimeConstant = 0; _sceneSm = smoothing;
   dataArray = new Uint8Array(analyser.frequencyBinCount);
 }
 
@@ -400,7 +403,7 @@ function applyAndLaunch() {
   bakedShimmer = seeds.shimmer;
   buildParticles(seeds.detail);
   _lastGeoKey = String(seeds.detail);
-  analyser.smoothingTimeConstant = seeds.smoothing;
+  _sceneSm = seeds.smoothing;
 }
 
 playBtn.addEventListener('click', () => {
@@ -555,7 +558,9 @@ function animate() {
   if (analyser && dataArray) {
     analyser.getByteFrequencyData(dataArray);
     for (let i = 0; i < 64; i++) {
-      frequencyUniform[i] = dataArray[i];
+      const a = i < 2 ? _bassSm : _sceneSm;
+      _smoothedFreq[i] = a * _smoothedFreq[i] + (1 - a) * dataArray[i];
+      frequencyUniform[i] = _smoothedFreq[i];
     }
   }
 
@@ -583,11 +588,11 @@ function _vjApply() {
   bakedShimmer = seeds.shimmer;
   const gk = String(seeds.detail);
   if (gk !== _lastGeoKey) { buildParticles(seeds.detail); _lastGeoKey = gk; }
-  if (analyser) analyser.smoothingTimeConstant = seeds.smoothing;
+  _sceneSm = seeds.smoothing;
 }
 
 window.SCENE = {
-  scene, camera, renderer, uniforms, frequencyUniform,
+  scene, camera, renderer, uniforms, frequencyUniform, _bassSm, get _sceneSm() { return _sceneSm; },
   get particles() { return particles; },
   get seedCenter() { return seedCenter; },
   get rotSpeedY() { return rotSpeedY; },

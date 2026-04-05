@@ -205,7 +205,10 @@ buildParticles(8);
 let rotSpeedY = 0.003, rotSpeedX = 0.002, bakedEpoch = 0.5, bakedFlux = 0.5;
 let seedCenter = { scatter: 0.5, breeze: 0.5, lift: 0.5, ephemeral: 0.5 };
 let audioContext, analyser, dataArray, source, audioDuration = 0, audioStartTime = 0;
-function initAudio(sm) { audioContext = new (window.AudioContext || window.webkitAudioContext)(); analyser = audioContext.createAnalyser(); analyser.fftSize = 128; analyser.smoothingTimeConstant = sm; dataArray = new Uint8Array(analyser.frequencyBinCount); }
+const _smoothedFreq = new Float32Array(64);
+let _sceneSm = 0.85;
+const _bassSm = 0.20;
+function initAudio(sm) { audioContext = new (window.AudioContext || window.webkitAudioContext)(); analyser = audioContext.createAnalyser(); analyser.fftSize = 128; analyser.smoothingTimeConstant = 0; _sceneSm = sm; dataArray = new Uint8Array(analyser.frequencyBinCount); }
 
 let currentBuffer = null, currentFileName = '';
 let playState = 'idle';
@@ -236,7 +239,7 @@ function applyAndLaunch() {
   rotSpeedY = s.rotSpeedY; rotSpeedX = s.rotSpeedX;
   seedCenter = { scatter: s.scatter, breeze: s.breeze, lift: s.lift, ephemeral: s.ephemeral };
   bakedEpoch = s.epoch; bakedFlux = s.flux;
-  buildParticles(s.detail); analyser.smoothingTimeConstant = s.smoothing;
+  buildParticles(s.detail); _sceneSm = s.smoothing;
   _lastGeoKey = String(s.detail);
 }
 
@@ -283,7 +286,7 @@ function animate() {
   const TP = Math.PI * 2;
   const _ds = (playState === 'playing' && audioDuration > 0) ? DRIFT_BASE / Math.max(12, Math.min(120, audioDuration * 0.4)) : 1, dt = elapsed * _ds, _dp = _driftPhases;
   for (const k in driftCycles) { const { period, depth } = driftCycles[k]; const sd = depth * (0.3 + bakedFlux * 1.4); const d = (Math.sin(dt * TP / period + (_dp[k] || 0)) * 0.65 + Math.sin(dt * TP / (period * 2.17) + 1.3 + (_dp[k] || 0)) * 0.35) * sd; uniforms[uMap[k]].value = Math.max(0.01, seedCenter[k] * (arc[k] || 1) * (1 + d)); }
-  if (analyser && dataArray) { analyser.getByteFrequencyData(dataArray); for (let i = 0; i < 64; i++) frequencyUniform[i] = dataArray[i]; }
+  if (analyser && dataArray) { analyser.getByteFrequencyData(dataArray); for (let i = 0; i < 64; i++) { const a = i < 2 ? _bassSm : _sceneSm; _smoothedFreq[i] = a * _smoothedFreq[i] + (1 - a) * dataArray[i]; frequencyUniform[i] = _smoothedFreq[i]; } }
   { let _lvl = 0; for (let i = 0; i < 64; i++) _lvl += frequencyUniform[i]; _lvl /= (64 * 255); const _tgt = Math.min(_lvl * 3.0, 1.0); _envelope += (_tgt - _envelope) * (_tgt > _envelope ? 0.14 : 0.035); uniforms.uEnvelope.value = Math.max(_envelope, 0.02); }
   const driftAmt = 0.16 * (0.4 + bakedFlux * 0.8);
   particles.position.x = Math.sin(dt * TP / (DRIFT_BASE * 2.0) + (_dp._px || 0)) * driftAmt;
@@ -306,11 +309,11 @@ function _vjApply() {
   bakedEpoch = s.epoch; bakedFlux = s.flux;
   const gk = String(s.detail);
   if (gk !== _lastGeoKey) { buildParticles(s.detail); _lastGeoKey = gk; }
-  if (analyser) analyser.smoothingTimeConstant = s.smoothing;
+  _sceneSm = s.smoothing;
 }
 
 window.SCENE = {
-  scene, camera, renderer, uniforms, frequencyUniform,
+  scene, camera, renderer, uniforms, frequencyUniform, _bassSm, get _sceneSm() { return _sceneSm; },
   get particles() { return particles; }, get seedCenter() { return seedCenter; },
   get rotSpeedY() { return rotSpeedY; }, get rotSpeedX() { return rotSpeedX; },
   get bakedArcScale() { return bakedEpoch; }, get bakedDriftScale() { return bakedFlux; },

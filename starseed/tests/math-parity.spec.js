@@ -558,3 +558,50 @@ test.describe('window.SCENE contract', () => {
     });
   }
 });
+
+// ── Per-band bass smoothing ──
+
+test.describe('Per-band bass smoothing', () => {
+
+  const sceneBass = [
+    { name: 'smbh',         group: 'original', expected: 0.05 },
+    { name: 'phi',          group: 'math',     expected: 0.05 },
+    { name: 'only-shallow', group: 'shoegaze', expected: 0.20 },
+  ];
+
+  for (const { name, group, expected } of sceneBass) {
+    test(`${name} (${group}): _bassSm is ${expected}`, async ({ page }) => {
+      await page.goto(`/${name}`);
+      await page.waitForFunction(() => !!window.SCENE, null, { timeout: 10_000 });
+      const val = await page.evaluate(() => window.SCENE._bassSm);
+      expect(val).toBe(expected);
+    });
+
+    test(`${name} (${group}): _sceneSm is a number`, async ({ page }) => {
+      await page.goto(`/${name}`);
+      await page.waitForFunction(() => !!window.SCENE, null, { timeout: 10_000 });
+      const val = await page.evaluate(() => window.SCENE._sceneSm);
+      expect(typeof val).toBe('number');
+      expect(val).toBeGreaterThanOrEqual(0);
+      expect(val).toBeLessThanOrEqual(1);
+    });
+
+    test(`${name} (${group}): analyser.smoothingTimeConstant is 0`, async ({ page }) => {
+      await page.goto(`/${name}`);
+      await page.waitForFunction(() => !!window.SCENE, null, { timeout: 10_000 });
+      await page.evaluate(() => window.SCENE.ensureAudio());
+      const stc = await page.evaluate(() => window.SCENE.analyser.smoothingTimeConstant);
+      expect(stc).toBe(0);
+    });
+
+    test(`${name} (${group}): _sceneSm updates after applyAndLaunch`, async ({ page }) => {
+      await page.goto(`/${name}`);
+      await page.waitForFunction(() => !!window.SCENE, null, { timeout: 10_000 });
+      await page.evaluate(() => { window.SCENE.ensureAudio(); window.SCENE.applyAndLaunch(); });
+      const sm1 = await page.evaluate(() => window.SCENE._sceneSm);
+      expect(typeof sm1).toBe('number');
+      expect(sm1).toBeGreaterThan(0);
+      expect(sm1).toBeLessThanOrEqual(1);
+    });
+  }
+});
