@@ -224,10 +224,6 @@
       <span class="icon">◉︎</span>
       <div class="name">Binary SMBH</div>
     </a>
-    <a href="spore" id="spore" class="scene-card">
-      <span class="icon">❋</span>
-      <div class="name">Spore</div>
-    </a>
     <a href="sakura" id="sakura" class="scene-card">
       <span class="icon">✿︎</span>
       <div class="name">Sakura</div>
@@ -235,6 +231,10 @@
     <a href="lotus" id="lotus" class="scene-card">
       <span class="icon">✾</span>
       <div class="name">Lotus</div>
+    </a>
+    <a href="spore" id="spore" class="scene-card">
+      <span class="icon">❋</span>
+      <div class="name">Spore</div>
     </a>
     <a href="filament" id="filament" class="scene-card">
       <span class="icon">⟋</span>
@@ -299,14 +299,13 @@
     </a>
     -->
   </div>
-  <button id="reset-hints" style="display:none;margin:48px auto 0;padding:6px 16px;font-family:inherit;font-size:11px;letter-spacing:1px;color:rgba(255,255,255,0.25);background:none;border:1px solid rgba(255,255,255,0.06);border-radius:8px;cursor:pointer;transition:all 0.3s" onmouseover="this.style.color='rgba(255,255,255,0.6)';this.style.borderColor='rgba(255,255,255,0.15)'" onmouseout="this.style.color='rgba(255,255,255,0.25)';this.style.borderColor='rgba(255,255,255,0.06)'">Reset Info Popups</button>
-
   <div class="about-lead">
   <div class="about">
     <h2>The Basics</h2>
     <p><strong>Starseed</strong> is an audio-reactive particle visualizer — upload a track or use your mic, and the visuals respond to your music in real time.</p>
-    <p>The eight control sliders per scene are <strong>intentionally abstract</strong> — names like <em>Epoch</em>, <em>Flux</em>, and <em>Tremolo</em> hint at their function. Some parameters ride slow time-based drift cycles and reveal themselves gradually. Move things around, hit <strong>Randomize</strong>, adjust the <strong>Aperture Scale</strong>, click <strong>Boundary</strong>, and let the scene surprise you.</p>
-    <p>Hit record and the app renders offline at <strong>60 fps</strong> using WebCodecs, muxing straight to MP4 — no server, no upload, everything stays in your browser. <strong>Listen mode</strong> skips the file and reacts directly to your microphone. On <strong>iOS</strong>, rendered videos won't include audio due to platform restrictions. Use your device's screen recording instead, or hop on a desktop to render with sound.</p>
+    <p>Visuals render in <strong>16:9</strong>, <strong>1:1</strong>, or <strong>9:16</strong>. <strong>⏣&nbsp;Aperture Scale</strong> adjusts the field of view, letting you reframe the composition for each format. The visuals are boundary aware and adapt accordingly — <strong>Boundary</strong> toggles this on/off. The <strong>eight control sliders</strong> per scene are intentionally abstract — names like <em>Epoch</em>, <em>Flux</em>, and <em>Tremolo</em> hint at their function. Some parameters ride slow time-based drift cycles and reveal themselves gradually. Move things around, hit <strong>Randomize</strong>, and let the scene surprise you.</p>
+    <p>Hit <strong>⏺︎ Record</strong> to capture video — the app renders offline at <strong>60 fps</strong> using WebCodecs, muxing straight to MP4. No server, no upload, everything stays in your browser. While rendering, keep this tab in the foreground and your device awake — the browser needs the screen active to draw each frame. On <strong>iOS</strong>, rendered videos won't include audio yet — screen-record or sync audio later, or come back on desktop. <strong>Listen mode</strong> reacts to your mic in real time — no record button here, use screen record.</p>
+    <p>Every scene has a <strong>narrative arc</strong> that evolves the visuals over the length of the track — shorter audio means a more compressed, dynamic arc. Trimming your audio to the target length before uploading (say, 60 seconds for a Reel) will give you a tighter, more dynamic render than recording a full song and cutting the video after. <strong>Experiment with rotation.</strong> The aspect ratio framing also opens up creative options: a 16:9 render rotated 90° in your editor becomes a completely different 9:16 composition, and even a 1:1 rotated 45° can give a fresh perspective.</p>
     <p><strong>Built for desktop</strong>, primarily tested on Windows/Chrome, MacOS/Chrome and iOS/Safari. Mobile works — fun with Listen mode — but for the full experience, a desktop browser is the way to go.</p>
   </div>
   </div>
@@ -315,7 +314,7 @@
   <div class="about">
     <h2>How it works</h2>
     <p>Starseed is an <strong>audio-reactive visualizer</strong> — every particle on screen moves in direct response to your music. Drop in any audio file, and the <strong>Web Audio API</strong> splits the signal into 64 frequency bands in real time. Those bands push, pull, and reshape a cloud of particles driven by <strong>custom GPU shaders</strong> every frame. <em>Everything runs on your device's GPU — modern hardware handles this easily, but low-power devices may drop frames.</em></p>
-    <p>Eight sliders per scene let you tune the physics: spread, drift, colour, threshold, and more. Aspect ratio, aperture scale, and boundary settings can dynamically alter the visuals in unique ways. A <strong>narrative arc</strong> slowly evolves the parameters over the length of the track so the visuals tell a story.</p>
+    <p>Eight sliders per scene let you <strong>tune the physics</strong>: spread, drift, colour, threshold, and more. Aspect ratio, aperture scale, and boundary settings can dynamically alter the visuals in unique ways. A <em>narrative arc</em> slowly evolves the parameters over the length of the track so the visuals tell a story.</p>
     <p>Behind the scenes, slow <strong>drift cycles</strong> — long sine waves between 1 and 5 minutes — continually shift rotation and scale. Combined with the arc, this means no two plays look the same.</p>
     <p>Built with <strong>♡︎</strong>, <strong>Three.js</strong>, <strong>WebGL</strong>, and zero build tools — <strong>plain JavaScript and GPU shader math</strong>. No AI, no machine learning, no server-side processing. Just code, trigonometry, and your music on static files. Developed on Windows Subsystem for Linux.</p>
   </div>
@@ -323,19 +322,24 @@
   <div class="about">
     <h2>Community Use &amp; Credits</h2>
     <h3>Free to Create</h3>
-    <p>Starseed is free to use: no signup, no paywall, no watermark. Create, render, and share your videos.</p>
+    <p><strong>Starseed is free to use:</strong> no signup, no paywall, no watermark. Create, render, and share your videos.</p>
     <h3>Attribution</h3>
     <p>If you publish Starseed renders publicly, please credit <strong>Mikey Dorje</strong> and tag/link <strong>@mikeydorje</strong> in your caption, description, or post metadata.</p>
     <h3>Ownership &amp; License</h3>
-    <p>Your music remains 100% yours. Your final videos are yours to publish and monetize. Starseed source code is open source and licensed for reuse and modification under the project license terms.</p>
+    <p><strong>Your music remains 100% yours. Your final videos are yours to publish and monetize.</strong> Starseed source code is open source and licensed for reuse and modification under the project license terms.</p>
     <h3>Privacy</h3>
-    <p>Your audio never leaves your device. Files are decoded in the browser and cached in local storage — nothing is uploaded anywhere. For the smoothest experience, keep local browser storage enabled (cookies/local site data) so Starseed can remember your uploaded audio and dismissed tips.</p>
+    <p><strong>Your audio never leaves your device.</strong> Files are decoded in the browser and cached in local storage — nothing is uploaded anywhere. For the smoothest experience, keep local browser storage enabled (cookies/local site data) so Starseed can remember your uploaded audio and dismissed tips.</p>
   </div>
   </div>
 
   <div class="version-history">
     <h2>Version History</h2>
     <p class="version-lead">Actively evolving — new scenes, features, and refinements ongoing.</p>
+    <div class="version-entry">
+      <h3>v1.1.1 — April 2026</h3>
+      <p><em>Index page overhaul. Recording terms gate.</em></p>
+      <p>Reorganized main page text layout into a cleaner hierarchy. Merged info popup content into The Basics. Removed the info box modal and its play-button gate. Added a one-time recording terms acknowledgment before first record — covers music rights and fair use. Reviewable from the index footer.</p>
+    </div>
     <div class="version-entry">
       <h3>v1.1.0 — April 2026</h3>
       <p><em>Improved low-end frequency response.</em></p>
@@ -381,24 +385,23 @@
     </div>
     <div class="footer-copy">
       <span>&copy; <span id="footer-year"></span> <strong>Mikey Dorje</strong></span><br>
-      <span>Starseed is free and open source.</span>
+      <span>Starseed is free and open source.</span><br>
+      <a href="#" id="rec-terms-link" style="display:none;color:rgba(255,255,255,0.25);font-size:10px;text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.08);transition:color 0.2s" onmouseover="this.style.color='rgba(255,255,255,0.5)'" onmouseout="this.style.color='rgba(255,255,255,0.25)'">Recording terms ✓</a>
+      <div id="idx-terms-overlay" style="position:fixed;inset:0;z-index:9999;background:rgba(5,5,10,0.85);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.35s ease">
+        <div style="max-width:380px;padding:28px 26px 22px;background:rgba(12,12,20,0.92);border:1px solid rgba(255,255,255,0.08);border-radius:14px;font-family:'Segoe UI',system-ui,sans-serif;color:rgba(255,255,255,0.7);font-size:12px;line-height:1.6">
+          <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:3px;color:rgba(255,255,255,0.5);margin:0 0 16px;font-weight:400">Before you record</h3>
+          <p style="margin:0 0 12px">Your final videos are yours. Download them, edit them, share them as you like.</p>
+          <p style="margin:0 0 12px">You're responsible for the music you use. If you own it or made it, you're good. If you're using someone else's music and sharing publicly, that's between you and the rights holder — platforms may remove or demonetize it. Credit the artist. Help people find the music.</p>
+          <label style="display:flex;align-items:center;gap:10px;margin-top:18px;cursor:pointer;font-size:12px;color:rgba(255,255,255,0.5);transition:color 0.2s" onmouseover="this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">
+            <input type="checkbox" id="idx-terms-cb" style="width:16px;height:16px;cursor:pointer;accent-color:rgba(255,80,80,0.7)">
+            <span style="font-weight:600;color:rgba(255,255,255,0.6)">I understand — let's go</span>
+          </label>
+        </div>
+      </div>
     </div>
   </footer>
 
   <script src="audio-store.js"></script>
-  <script>
-  (function(){
-    var HINT_KEYS=['starseed-info-dismissed'];
-    var btn=document.getElementById('reset-hints');
-    function hasStored(){return HINT_KEYS.some(function(k){return localStorage.getItem(k)==='1';})}
-    if(hasStored())btn.style.display='block';
-    btn.addEventListener('click',function(){
-      HINT_KEYS.forEach(function(k){localStorage.removeItem(k);});
-      btn.style.display='none';
-    });
-
-  })();
-  </script>
   <script>
   (function(){
     var id = sessionStorage.getItem('starseed-scroll');
@@ -418,6 +421,39 @@
   (function(){
     var el = document.getElementById('footer-year');
     if (el) el.textContent = String(new Date().getFullYear());
+
+    var TERMS_KEY = 'starseed-record-terms-v1';
+    var link = document.getElementById('rec-terms-link');
+    var overlay = document.getElementById('idx-terms-overlay');
+    var cb = document.getElementById('idx-terms-cb');
+    if (link && localStorage.getItem(TERMS_KEY) === '1') {
+      link.style.display = 'inline';
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        cb.checked = localStorage.getItem(TERMS_KEY) === '1';
+        overlay.style.opacity = '1';
+        overlay.style.pointerEvents = 'auto';
+      });
+    }
+    if (overlay) {
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+          overlay.style.opacity = '0';
+          overlay.style.pointerEvents = 'none';
+        }
+      });
+    }
+    if (cb) {
+      cb.addEventListener('change', function() {
+        if (this.checked) {
+          localStorage.setItem(TERMS_KEY, '1');
+          link.style.display = 'inline';
+        } else {
+          localStorage.removeItem(TERMS_KEY);
+          link.style.display = 'none';
+        }
+      });
+    }
   })();
   </script>
 </body>

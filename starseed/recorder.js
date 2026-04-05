@@ -4,6 +4,7 @@ const Recorder = (() => {
   const FPS = 60;
   const VIDEO_BITRATE = 12_000_000;
   const AUDIO_BITRATE = 128_000;
+  const TERMS_KEY = 'starseed-record-terms-v1';
   const FORMATS = [
     { name: '16x9', label: '16:9',  width: 1920, height: 1080 },
     { name: '1x1',  label: '1:1',   width: 1080, height: 1080 },
@@ -708,6 +709,36 @@ const Recorder = (() => {
         object-fit:contain;
         min-height:0 !important; min-width:0 !important;
       }
+      #rec-terms-overlay {
+        position:fixed; inset:0; z-index:9999;
+        background:rgba(5,5,10,0.85); backdrop-filter:blur(12px);
+        display:flex; align-items:center; justify-content:center;
+        opacity:0; pointer-events:none; transition:opacity 0.35s ease;
+      }
+      #rec-terms-overlay.active { opacity:1; pointer-events:auto; }
+      #rec-terms-box {
+        max-width:380px; padding:28px 26px 22px;
+        background:rgba(12,12,20,0.92); border:1px solid rgba(255,255,255,0.08);
+        border-radius:14px; font-family:'Segoe UI',system-ui,sans-serif;
+        color:rgba(255,255,255,0.7); font-size:12px; line-height:1.6;
+      }
+      #rec-terms-box h3 {
+        font-size:13px; text-transform:uppercase; letter-spacing:3px;
+        color:rgba(255,255,255,0.5); margin:0 0 16px; font-weight:400;
+      }
+      #rec-terms-box p { margin:0 0 12px; }
+      #rec-terms-box strong { color:rgba(255,255,255,0.55); font-weight:600; }
+      #rec-terms-check {
+        display:flex; align-items:center; gap:10px;
+        margin-top:18px; cursor:pointer; font-size:12px;
+        color:rgba(255,255,255,0.5); transition:color 0.2s;
+      }
+      #rec-terms-check:hover { color:rgba(255,255,255,0.8); }
+      #rec-terms-check input {
+        width:16px; height:16px; cursor:pointer;
+        accent-color:rgba(255,80,80,0.7);
+      }
+      #rec-terms-check span { font-weight:600; color:rgba(255,255,255,0.6); }
     `;
     document.head.appendChild(s);
   }
@@ -750,7 +781,7 @@ const Recorder = (() => {
     recordBtn.id = 'rec-btn';
     recordBtn.title = 'Record video';
     recordBtn.innerHTML = '<div class="rec-dot"></div>';
-    recordBtn.addEventListener('click', openFormatPicker);
+    recordBtn.addEventListener('click', showTermsOrRecord);
     document.body.appendChild(recordBtn);
 
     pauseBtn = document.createElement('button');
@@ -1189,6 +1220,45 @@ const Recorder = (() => {
       S.renderer.domElement.style.height = visH + 'px';
     }
   }, true); // capturing phase — fires before scene handlers
+
+  // ===== Recording terms modal =====
+  let termsOverlay = null;
+
+  function createTermsModal() {
+    termsOverlay = document.createElement('div');
+    termsOverlay.id = 'rec-terms-overlay';
+    termsOverlay.innerHTML = `
+      <div id="rec-terms-box">
+        <h3>Before you record</h3>
+        <p>Your final videos are yours. Download them, edit them, share them as you like.</p>
+        <p>You're responsible for the music you use. If you own it or made it, you're good. If you're using someone else's music and sharing publicly, that's between you and the rights holder — platforms may remove or demonetize it. Credit the artist. Help people find the music.</p>
+        <label id="rec-terms-check">
+          <input type="checkbox" id="rec-terms-cb">
+          <span>I understand — let's go</span>
+        </label>
+      </div>
+    `;
+    document.body.appendChild(termsOverlay);
+    document.getElementById('rec-terms-cb').addEventListener('change', function () {
+      if (this.checked) {
+        localStorage.setItem(TERMS_KEY, '1');
+        termsOverlay.classList.remove('active');
+        openFormatPicker();
+      } else {
+        localStorage.removeItem(TERMS_KEY);
+      }
+    });
+  }
+
+  function showTermsOrRecord() {
+    if (localStorage.getItem(TERMS_KEY) === '1') {
+      openFormatPicker();
+      return;
+    }
+    if (!termsOverlay) createTermsModal();
+    document.getElementById('rec-terms-cb').checked = false;
+    termsOverlay.classList.add('active');
+  }
 
   // ===== Format picker overlay =====
   function openFormatPicker() {
