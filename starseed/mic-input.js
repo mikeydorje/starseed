@@ -139,7 +139,6 @@
 
   // fs-btn/back-btn appear later in the DOM, so bind after DOMContentLoaded.
   // Use capturing phase so this fires BEFORE the inline Fullscreen API handler.
-  var desktopFSHidden = false;
 
   document.addEventListener('DOMContentLoaded', function() {
     fsBtnEl = document.getElementById('fs-btn');
@@ -187,16 +186,12 @@
     document.addEventListener('fullscreenchange', function() {
       if (isMobile) return;
       if (document.fullscreenElement) {
-        desktopFSHidden = true;
         inDesktopFS = true;
-        fsBtnEl.style.display = 'none';
-        if (backBtnEl) backBtnEl.style.display = 'none';
         document.body.classList.add('toolbar-hidden');
         toolbarTab.classList.remove('open');
         toolbarTab.innerHTML = '\u25B2';
         updateTabVisibility();
       } else {
-        desktopFSHidden = false;
         inDesktopFS = false;
         fsBtnEl.style.display = '';
         if (backBtnEl) backBtnEl.style.display = '';
@@ -210,15 +205,9 @@
     setInterval(updateTabVisibility, 250);
   });
 
-  // Canvas click: restore chrome in fullscreen/pseudo-fs OR toggle controls during mic mode
+  // Canvas click: exit pseudo-fs OR toggle controls during mic mode
   S.renderer.domElement.addEventListener('click', () => {
     if (pseudoFS) { exitPseudoFS(); return; }
-    if (desktopFSHidden) {
-      desktopFSHidden = false;
-      if (fsBtnEl) fsBtnEl.style.display = '';
-      if (backBtnEl) backBtnEl.style.display = '';
-      return;
-    }
     if (S.playState !== 'listening') return;
     stopListening();
   });

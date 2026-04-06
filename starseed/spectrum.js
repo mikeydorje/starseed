@@ -269,7 +269,7 @@ const diagBar = document.getElementById('diag-bar');
 
 // ── Audio file handling (same pattern as other scenes) ──
 function showAudioReady() {
-  document.getElementById('upload-area').style.display = 'none';
+  document.getElementById('upload-area').style.display = 'none'; document.getElementById('audio-loader').style.display = 'none';
   document.getElementById('audio-ready').style.display = 'block';
   document.getElementById('audio-name').textContent = currentFileName;
   playBtn.textContent = '\u25b6\uFE0E Play';
@@ -294,7 +294,7 @@ fileInput.addEventListener('change', e => {
   reader.readAsArrayBuffer(file);
 });
 AudioStore.load().then(data => {
-  if (!data) return;
+  if (!data) { document.getElementById('audio-loader').style.display='none';document.getElementById('upload-area').style.display=''; return; }
   currentFileName = data.name;
   if (!audioContext) initAudio(0.85);
   audioContext.decodeAudioData(data.buffer, buf => {
@@ -302,7 +302,7 @@ AudioStore.load().then(data => {
     audioDuration = buf.duration;
     showAudioReady();
   });
-}).catch(() => {});
+}).catch(() => { document.getElementById('audio-loader').style.display='none';document.getElementById('upload-area').style.display=''; });
 
 function applyAndLaunch() {
   if (playState === 'listening' && window.SCENE && window.SCENE._stopMic) window.SCENE._stopMic();
@@ -323,7 +323,7 @@ playBtn.addEventListener('click', () => {
   source.connect(analyser);
   analyser.connect(audioContext.destination);
   if (audioContext.state === 'suspended') audioContext.resume();
-  source.start(0);
+  source.loop=true;source.start(0);
   audioStartTime = audioContext.currentTime;
   playState = 'playing';
   source.onended = () => {

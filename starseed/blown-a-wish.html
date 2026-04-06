@@ -42,7 +42,8 @@
     <div class="param"><label><span class="name">⧖ Season</span><span class="val" id="p6-val">55</span></label><div class="desc">Narrative arc · not in listen mode</div><input type="range" id="p6" min="0" max="100" value="55" /></div>
     <button id="randomize-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>Randomize</button>
     <input type="file" id="file-input" accept=".mp3,.wav,.m4a,.aac,.ogg,.flac,.webm,audio/mpeg,audio/wav,audio/mp4,audio/aac,audio/ogg,audio/flac,audio/webm" />
-    <div id="upload-area"><label class="upload-btn" for="file-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload Audio</label></div>
+    <div id="upload-area" style="display:none"><label class="upload-btn" for="file-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload Audio</label></div>
+    <div id="audio-loader" style="text-align:center;margin-top:18px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25)">Loading audio…</div>
     <div id="audio-ready" style="display:none"><span id="audio-name" class="audio-filename"></span><button id="play-btn" class="play-btn">▶︎ Play</button><button id="replace-btn" class="replace-btn">Replace Audio</button></div>
     </div>
   </div>

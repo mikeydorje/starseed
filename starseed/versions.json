@@ -1,5 +1,15 @@
 [
   {
+    "version": "v1.2.1",
+    "date": "April 2026",
+    "tag": "",
+    "summary": "Audio looping. Loader state. Fixes.",
+    "details": [
+      "Audio loops so you can tweak settings without restarting — the narrative arc cycles each pass. Loading state while audio initializes. Fixed desktop fullscreen buttons and Clear Settings detection."
+    ],
+    "major": false
+  },
+  {
     "version": "v1.2.0",
     "date": "April 2026",
     "tag": "",

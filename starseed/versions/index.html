@@ -120,7 +120,7 @@
   (function() {
     var el = document.getElementById('version-entries');
     if (!el) return;
-    fetch('versions.json').then(function(r) { return r.json(); }).then(function(versions) {
+    fetch('../versions.json').then(function(r) { return r.json(); }).then(function(versions) {
       var html = '';
       versions.forEach(function(v) {
         html += '<div class="version-entry">';

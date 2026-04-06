@@ -313,7 +313,7 @@ const playBtn = document.getElementById('play-btn');
 const controlsEl = document.getElementById('controls');
 
 function showAudioReady() {
-  document.getElementById('upload-area').style.display = 'none';
+  document.getElementById('upload-area').style.display = 'none'; document.getElementById('audio-loader').style.display = 'none';
   document.getElementById('audio-ready').style.display = 'block';
   document.getElementById('audio-name').textContent = currentFileName;
   playBtn.textContent = '\u25b6\uFE0E Play';
@@ -339,7 +339,7 @@ fileInput.addEventListener('change', (e) => {
 });
 
 AudioStore.load().then(data => {
-  if (!data) return;
+  if (!data) { document.getElementById('audio-loader').style.display='none';document.getElementById('upload-area').style.display=''; return; }
   currentFileName = data.name;
   if (!audioContext) initAudio(0.85);
   audioContext.decodeAudioData(data.buffer, (buffer) => {
@@ -347,7 +347,7 @@ AudioStore.load().then(data => {
     audioDuration = buffer.duration;
     showAudioReady();
   });
-}).catch(() => {});
+}).catch(() => { document.getElementById('audio-loader').style.display='none';document.getElementById('upload-area').style.display=''; });
 
 function ensureAudio() {
   if (!audioContext) initAudio(0.85);
@@ -400,7 +400,7 @@ playBtn.addEventListener('click', () => {
   source.connect(analyser);
   analyser.connect(audioContext.destination);
   if (audioContext.state === 'suspended') audioContext.resume();
-  source.start(0);
+  source.loop=true;source.start(0);
   audioStartTime = audioContext.currentTime;
   playState = 'playing';
   source.onended = () => {
@@ -469,7 +469,7 @@ function animate() {
 
   let arcMult = { tension: 1, weave: 1, pulseFreq: 1, pulseSpeed: 1, span: 1, rot: 1 };
   if (playState === 'playing' && audioDuration > 0 && audioStartTime > 0) {
-    const progress = Math.min((audioContext.currentTime - audioStartTime) / audioDuration, 1.0);
+    const progress = ((audioContext.currentTime - audioStartTime) / audioDuration) % 1;
     const rawArc = storyArc(progress);
     for (const k in rawArc) arcMult[k] = 1.0 + (rawArc[k] - 1.0) * bakedArc;
   }

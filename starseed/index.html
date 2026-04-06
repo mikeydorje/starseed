@@ -343,8 +343,8 @@
   <div class="about">
     <h2>The Basics</h2>
     <p><strong>Starseed</strong> is an audio-reactive particle visualizer — upload a track or use your mic, and the visuals respond to your music in real time.</p>
-    <p>Visuals render in <strong>16:9</strong>, <strong>1:1</strong>, or <strong>9:16</strong>. <strong>⏣&nbsp;Aperture Scale</strong> adjusts the field of view, letting you reframe the composition for each format. The visuals are boundary aware and adapt accordingly — <strong>Boundary</strong> toggles this on/off. The <strong>eight control sliders</strong> per scene are intentionally abstract — names like <em>Epoch</em>, <em>Flux</em>, and <em>Tremolo</em> hint at their function. Some parameters ride slow time-based drift cycles and reveal themselves gradually. Move things around, hit <strong>Randomize</strong>, and let the scene surprise you. Each scene remembers your settings between visits.</p>
-    <p>Hit <strong>⏺︎ Record</strong> to capture video — the app renders offline at <strong>60 fps</strong> using WebCodecs, muxing straight to MP4. No server, no upload, everything stays in your browser. While rendering, keep this tab in the foreground and your device awake — the browser needs the screen active to draw each frame. On <strong>iOS</strong>, rendered videos won't include audio yet — screen-record or sync audio later, or come back on desktop. <strong>Listen mode</strong> reacts to your mic in real time — no record button here, use screen record.</p>
+    <p>Visuals render in <strong>16:9</strong>, <strong>1:1</strong>, or <strong>9:16</strong>. <strong>⏣&nbsp;Aperture Scale</strong> adjusts the field of view, letting you reframe the composition for each format. The visuals are boundary aware and adapt accordingly — <strong>Boundary</strong> toggles this on/off. The <strong>eight control sliders</strong> per scene are intentionally abstract — names like <em>Epoch</em>, <em>Flux</em>, and <em>Tremolo</em> hint at their function. Some parameters ride slow time-based <strong>drift cycles</strong> and reveal themselves gradually. Move things around, hit <strong>Randomize</strong>, and let the scene surprise you. Each scene remembers your settings between visits.</p>
+    <p>Hit <strong>⏺︎ Record</strong> to capture video — the app renders offline at <strong>60 fps</strong> using WebCodecs, muxing straight to MP4. No server, no upload, everything stays in your browser. While rendering, keep this tab in the foreground and your device awake — the browser needs the screen active to draw each frame. On <strong>iOS</strong>, rendered videos won't include audio yet — screen-record or sync audio later, or come back on desktop. <strong>Listen mode</strong> reacts to your mic in real time — no record button here, use screen record. Currently, your recording will differ from the onscreen preview as drift cycles rotate, but your settings — which control the underlying math — are identical.</p>
     <p>Every scene has a <strong>narrative arc</strong> that evolves the visuals over the length of the track — shorter audio means a more compressed, dynamic arc. Trimming your audio to the target length before uploading (say, 60 seconds for a Reel) will give you a tighter, more dynamic render than recording a full song and cutting the video after. <strong>Experiment with rotation.</strong> The aspect ratio framing also opens up creative options: a 16:9 render rotated 90° in your editor becomes a completely different 9:16 composition, and even a 1:1 rotated 45° can give a fresh perspective.</p>
     <p><strong>Built for desktop</strong>, primarily tested on Windows/Chrome, MacOS/Chrome and iOS/Safari. Mobile works — fun with Listen mode — but for the full experience, a desktop browser is the way to go.</p>
   </div>
@@ -355,7 +355,7 @@
     <h2>How it works</h2>
     <p>Starseed is an <strong>audio-reactive visualizer</strong> — every particle on screen moves in direct response to your music. Drop in any audio file, and the <strong>Web Audio API</strong> splits the signal into 64 frequency bands in real time. Those bands push, pull, and reshape a cloud of particles driven by <strong>custom GPU shaders</strong> every frame. <em>Everything runs on your device's GPU — modern hardware handles this easily, but low-power devices may drop frames.</em></p>
     <p>Eight sliders per scene let you <strong>tune the physics</strong>: spread, drift, colour, threshold, and more. Aspect ratio, aperture scale, and boundary settings can dynamically alter the visuals in unique ways. A <em>narrative arc</em> slowly evolves the parameters over the length of the track so the visuals tell a story.</p>
-    <p>Behind the scenes, slow <strong>drift cycles</strong> — long sine waves between 1 and 5 minutes — continually shift rotation and scale. Combined with the arc, this means no two plays look the same.</p>
+    <p>Behind the scenes, slow drift cycles — long <strong>sine waves</strong> between 1 and 5 minutes — continually shift rotation and scale. Combined with the arc, this means no two plays look the same.</p>
     <p>Built with <strong>♡︎</strong>, <strong>Three.js</strong>, <strong>WebGL</strong>, and zero build tools — <strong>plain JavaScript and GPU shader math</strong>. No AI, no machine learning, no server-side processing. Just code, trigonometry, and your music on static files. Developed on Windows Subsystem for Linux.</p>
   </div>
 
@@ -493,7 +493,7 @@
       // Check localStorage params first (sync)
       if (hasStoredData()) { btn.style.display = 'inline'; return; }
       // Check IndexedDB audio (async)
-      if (window.AudioStore && AudioStore.load) {
+      if (typeof AudioStore !== 'undefined' && AudioStore.load) {
         AudioStore.load().then(function(data) {
           btn.style.display = data ? 'inline' : 'none';
         }).catch(function() {});
@@ -552,7 +552,7 @@
         html += '<p><em>' + esc(item.entry.summary) + '</em></p>';
         item.entry.details.forEach(function(p) { html += '<p>' + esc(p) + '</p>'; });
         if (item.faded) {
-          html += '<a class="view-all-link" href="versions.html">View All History</a>';
+          html += '<a class="view-all-link" href="versions/">View All History</a>';
         }
         html += '</div>';
       });

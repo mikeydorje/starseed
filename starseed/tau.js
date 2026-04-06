@@ -238,7 +238,7 @@ const playBtn = document.getElementById('play-btn');
 const controlsEl = document.getElementById('controls');
 
 function showAudioReady() {
-  document.getElementById('upload-area').style.display = 'none';
+  document.getElementById('upload-area').style.display = 'none'; document.getElementById('audio-loader').style.display = 'none';
   document.getElementById('audio-ready').style.display = 'block';
   document.getElementById('audio-name').textContent = currentFileName;
   playBtn.textContent = '\u25b6\uFE0E Play';
@@ -262,14 +262,14 @@ fileInput.addEventListener('change', e => {
 });
 
 AudioStore.load().then(data => {
-  if (!data) return;
+  if (!data) { document.getElementById('audio-loader').style.display='none';document.getElementById('upload-area').style.display=''; return; }
   currentFileName = data.name;
   if (!audioContext) initAudio(0.85);
   audioContext.decodeAudioData(data.buffer, buf => {
     currentBuffer = buf; audioDuration = buf.duration;
     showAudioReady();
   });
-}).catch(() => {});
+}).catch(() => { document.getElementById('audio-loader').style.display='none';document.getElementById('upload-area').style.display=''; });
 
 function ensureAudio() {
   if (!audioContext) initAudio(0.85);
@@ -307,7 +307,7 @@ playBtn.addEventListener('click', () => {
   source.buffer = currentBuffer;
   source.connect(analyser); analyser.connect(audioContext.destination);
   if (audioContext.state === 'suspended') audioContext.resume();
-  source.start(0); audioStartTime = audioContext.currentTime;
+  source.loop=true;source.start(0); audioStartTime = audioContext.currentTime;
   playState = 'playing';
   source.onended = () => {
     playState = 'idle';
@@ -358,7 +358,7 @@ function animate() {
   uniforms.uTime.value = elapsed;
   let arc = { winding:1, orbit:1, phase:1, revolution:1, rot:1 };
   if (playState === 'playing' && audioDuration > 0 && audioStartTime > 0) {
-    const pr = Math.min((audioContext.currentTime - audioStartTime) / audioDuration, 1);
+    const pr = ((audioContext.currentTime - audioStartTime) / audioDuration) % 1;
     const raw = storyArc(pr);
     for (const k in raw) arc[k] = 1 + (raw[k] - 1) * bakedEpoch;
   }
