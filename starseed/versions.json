@@ -1,0 +1,56 @@
+[
+  {
+    "version": "v1.2.0",
+    "date": "April 2026",
+    "tag": "",
+    "summary": "Persistent scene settings. Clear Settings.",
+    "details": [
+      "Scenes remember slider positions, aperture scale, and boundary toggle between visits. First visit starts random; return visits restore your last settings. Randomize saves too. Clear Settings button on the index page wipes saved audio and all stored params.",
+      "Version history now loads from a shared data file. Index page shows latest, a preview of the previous, and the most recent major release. Full history on its own page."
+    ],
+    "major": false
+  },
+  {
+    "version": "v1.1.1",
+    "date": "April 2026",
+    "tag": "",
+    "summary": "Index page overhaul. Recording terms gate.",
+    "details": [
+      "Reorganized main page text layout into a cleaner hierarchy. Merged info popup content into The Basics. Removed the info box modal and its play-button gate. Added a one-time recording terms acknowledgment before first record — covers music rights and fair use. Reviewable from the index footer."
+    ],
+    "major": false
+  },
+  {
+    "version": "v1.1.0",
+    "date": "April 2026",
+    "tag": "",
+    "summary": "Improved low-end frequency response.",
+    "details": [
+      "Per-band bass smoothing across all scenes and the offline recorder. Tighter kick and bass transients. Updated integration tests."
+    ],
+    "major": false
+  },
+  {
+    "version": "v1.0.1",
+    "date": "April 2026",
+    "tag": "",
+    "summary": "Integration tests and UI polish.",
+    "details": [
+      "Playwright end-to-end test suite — 65 tests covering UI state, math parity across scenes, and SCENE contract validation.",
+      "Minor UI adjustments: toolbar button layout, popout control panel sizing, version history formatting, index page text edits. Format preview now defaults to 9:16 on portrait viewports."
+    ],
+    "major": false
+  },
+  {
+    "version": "v1.0.0 (Beta)",
+    "date": "April 2026",
+    "tag": "",
+    "summary": "",
+    "details": [
+      "18 audio-reactive particle scenes built on Three.js and WebGL. Each scene has 8 control sliders, a narrative arc that shifts the visuals over the length of the track, and background drift cycles.",
+      "Playback from file upload or Listen mode (live mic input). Offline MP4 recording at 60 fps, encoded and muxed in the browser via WebCodecs. Format preview for 16:9, 1:1, and 9:16. Audio cached locally via IndexedDB.",
+      "Popout control panel for live slider adjustment, randomize, and format selection. Fullscreen toggle. Static site — no server, no build tools, no tracking."
+    ],
+    "major": true
+  }
+]

@@ -157,6 +157,33 @@
       margin-left: auto;
       margin-right: auto;
     }
+    .version-entry.faded-entry {
+      position: relative;
+      max-height: 110px;
+      overflow: hidden;
+    }
+    .version-entry.faded-entry::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 70px;
+      background: linear-gradient(to bottom, rgba(5,5,8,0), rgba(5,5,8,1));
+      pointer-events: none;
+    }
+    .view-all-link {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1;
+      color: rgba(255,255,255,0.25);
+      font-size: 10px;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      transition: color 0.2s;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    .view-all-link:hover { color: rgba(255,255,255,0.5); }
     .version-history h3 {
       font-size: 11px;
       text-transform: uppercase;
@@ -299,11 +326,24 @@
     </a>
     -->
   </div>
+  <div style="text-align:center;margin:32px 0 0">
+    <a href="#" id="clear-settings-btn" style="color:rgba(255,255,255,0.2);font-size:10px;text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.06);transition:color 0.2s;font-family:'Segoe UI',system-ui,sans-serif" onmouseover="this.style.color='rgba(255,255,255,0.45)'" onmouseout="this.style.color='rgba(255,255,255,0.2)'">Clear Settings</a>
+  </div>
+  <div id="clear-overlay" style="position:fixed;inset:0;z-index:9999;background:rgba(5,5,10,0.85);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.35s ease">
+    <div style="max-width:380px;padding:28px 26px 22px;background:rgba(12,12,20,0.92);border:1px solid rgba(255,255,255,0.08);border-radius:14px;font-family:'Segoe UI',system-ui,sans-serif;color:rgba(255,255,255,0.7);font-size:12px;line-height:1.6">
+      <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:3px;color:rgba(255,255,255,0.5);margin:0 0 16px;font-weight:400">Clear settings</h3>
+      <p style="margin:0 0 18px">This will clear your uploaded audio and all saved settings. Sliders will start at random on your next visit to each scene.</p>
+      <div style="display:flex;gap:12px;justify-content:flex-end">
+        <button id="clear-cancel" style="padding:6px 16px;border:1px solid rgba(255,255,255,0.12);border-radius:6px;background:transparent;color:rgba(255,255,255,0.5);font-size:11px;cursor:pointer;font-family:inherit;transition:color 0.2s" onmouseover="this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Cancel</button>
+        <button id="clear-confirm" style="padding:6px 16px;border:1px solid rgba(255,80,80,0.3);border-radius:6px;background:rgba(255,80,80,0.1);color:rgba(255,80,80,0.7);font-size:11px;cursor:pointer;font-family:inherit;font-weight:600;transition:color 0.2s,background 0.2s" onmouseover="this.style.background='rgba(255,80,80,0.2)';this.style.color='rgba(255,80,80,0.9)'" onmouseout="this.style.background='rgba(255,80,80,0.1)';this.style.color='rgba(255,80,80,0.7)'">Clear</button>
+      </div>
+    </div>
+  </div>
   <div class="about-lead">
   <div class="about">
     <h2>The Basics</h2>
     <p><strong>Starseed</strong> is an audio-reactive particle visualizer — upload a track or use your mic, and the visuals respond to your music in real time.</p>
-    <p>Visuals render in <strong>16:9</strong>, <strong>1:1</strong>, or <strong>9:16</strong>. <strong>⏣&nbsp;Aperture Scale</strong> adjusts the field of view, letting you reframe the composition for each format. The visuals are boundary aware and adapt accordingly — <strong>Boundary</strong> toggles this on/off. The <strong>eight control sliders</strong> per scene are intentionally abstract — names like <em>Epoch</em>, <em>Flux</em>, and <em>Tremolo</em> hint at their function. Some parameters ride slow time-based drift cycles and reveal themselves gradually. Move things around, hit <strong>Randomize</strong>, and let the scene surprise you.</p>
+    <p>Visuals render in <strong>16:9</strong>, <strong>1:1</strong>, or <strong>9:16</strong>. <strong>⏣&nbsp;Aperture Scale</strong> adjusts the field of view, letting you reframe the composition for each format. The visuals are boundary aware and adapt accordingly — <strong>Boundary</strong> toggles this on/off. The <strong>eight control sliders</strong> per scene are intentionally abstract — names like <em>Epoch</em>, <em>Flux</em>, and <em>Tremolo</em> hint at their function. Some parameters ride slow time-based drift cycles and reveal themselves gradually. Move things around, hit <strong>Randomize</strong>, and let the scene surprise you. Each scene remembers your settings between visits.</p>
     <p>Hit <strong>⏺︎ Record</strong> to capture video — the app renders offline at <strong>60 fps</strong> using WebCodecs, muxing straight to MP4. No server, no upload, everything stays in your browser. While rendering, keep this tab in the foreground and your device awake — the browser needs the screen active to draw each frame. On <strong>iOS</strong>, rendered videos won't include audio yet — screen-record or sync audio later, or come back on desktop. <strong>Listen mode</strong> reacts to your mic in real time — no record button here, use screen record.</p>
     <p>Every scene has a <strong>narrative arc</strong> that evolves the visuals over the length of the track — shorter audio means a more compressed, dynamic arc. Trimming your audio to the target length before uploading (say, 60 seconds for a Reel) will give you a tighter, more dynamic render than recording a full song and cutting the video after. <strong>Experiment with rotation.</strong> The aspect ratio framing also opens up creative options: a 16:9 render rotated 90° in your editor becomes a completely different 9:16 composition, and even a 1:1 rotated 45° can give a fresh perspective.</p>
     <p><strong>Built for desktop</strong>, primarily tested on Windows/Chrome, MacOS/Chrome and iOS/Safari. Mobile works — fun with Listen mode — but for the full experience, a desktop browser is the way to go.</p>
@@ -328,35 +368,14 @@
     <h3>Ownership &amp; License</h3>
     <p><strong>Your music remains 100% yours. Your final videos are yours to publish and monetize.</strong> Starseed source code is open source and licensed for reuse and modification under the project license terms.</p>
     <h3>Privacy</h3>
-    <p><strong>Your audio never leaves your device.</strong> Files are decoded in the browser and cached in local storage — nothing is uploaded anywhere. For the smoothest experience, keep local browser storage enabled (cookies/local site data) so Starseed can remember your uploaded audio and dismissed tips.</p>
+    <p><strong>Your audio never leaves your device.</strong> Files are decoded in the browser and cached in local storage — nothing is uploaded anywhere. For the smoothest experience, keep local browser storage enabled (cookies/local site data) so Starseed can remember your uploaded audio and saved settings.</p>
   </div>
   </div>
 
   <div class="version-history">
     <h2>Version History</h2>
     <p class="version-lead">Actively evolving — new scenes, features, and refinements ongoing.</p>
-    <div class="version-entry">
-      <h3>v1.1.1 — April 2026</h3>
-      <p><em>Index page overhaul. Recording terms gate.</em></p>
-      <p>Reorganized main page text layout into a cleaner hierarchy. Merged info popup content into The Basics. Removed the info box modal and its play-button gate. Added a one-time recording terms acknowledgment before first record — covers music rights and fair use. Reviewable from the index footer.</p>
-    </div>
-    <div class="version-entry">
-      <h3>v1.1.0 — April 2026</h3>
-      <p><em>Improved low-end frequency response.</em></p>
-      <p>Per-band bass smoothing across all scenes and the offline recorder. Tighter kick and bass transients. Updated integration tests.</p>
-    </div>
-    <div class="version-entry">
-      <h3>v1.0.1 — April 2026</h3>
-      <p><em>Integration tests and UI polish.</em></p>
-      <p>Playwright end-to-end test suite — 65 tests covering UI state, math parity across scenes, and SCENE contract validation.</p>
-      <p>Minor UI adjustments: toolbar button layout, popout control panel sizing, version history formatting, index page text edits. Format preview now defaults to 9:16 on portrait viewports.</p>
-    </div>
-    <div class="version-entry">
-      <h3>v1.0.0 (Beta) — April 2026</h3>
-      <p>18 audio-reactive particle scenes built on Three.js and WebGL. Each scene has 8 control sliders, a narrative arc that shifts the visuals over the length of the track, and background drift cycles.</p>
-      <p>Playback from file upload or Listen mode (live mic input). Offline MP4 recording at 60 fps, encoded and muxed in the browser via WebCodecs. Format preview for 16:9, 1:1, and 9:16. Audio cached locally via IndexedDB.</p>
-      <p>Popout control panel for live slider adjustment, randomize, and format selection. Fullscreen toggle. Static site — no server, no build tools, no tracking.</p>
-    </div>
+    <div id="version-entries"></div>
   </div>
 
   <footer class="site-footer">
@@ -453,6 +472,94 @@
           link.style.display = 'none';
         }
       });
+    }
+  })();
+  </script>
+  <script>
+  (function(){
+    var btn = document.getElementById('clear-settings-btn');
+    var ov = document.getElementById('clear-overlay');
+    var cancelBtn = document.getElementById('clear-cancel');
+    var confirmBtn = document.getElementById('clear-confirm');
+
+    // Only show if there are params or audio to clear
+    function hasStoredData() {
+      for (var i = 0; i < localStorage.length; i++) {
+        if (localStorage.key(i).indexOf('starseed-params-') === 0) return true;
+      }
+      return false;
+    }
+    function checkVisibility() {
+      // Check localStorage params first (sync)
+      if (hasStoredData()) { btn.style.display = 'inline'; return; }
+      // Check IndexedDB audio (async)
+      if (window.AudioStore && AudioStore.load) {
+        AudioStore.load().then(function(data) {
+          btn.style.display = data ? 'inline' : 'none';
+        }).catch(function() {});
+      }
+    }
+    if (btn) {
+      btn.style.display = 'none';
+      checkVisibility();
+    }
+
+    function hide() { ov.style.opacity = '0'; ov.style.pointerEvents = 'none'; }
+    if (btn) btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      ov.style.opacity = '1'; ov.style.pointerEvents = 'auto';
+    });
+    if (cancelBtn) cancelBtn.addEventListener('click', hide);
+    if (ov) ov.addEventListener('click', function(e) { if (e.target === ov) hide(); });
+    if (confirmBtn) confirmBtn.addEventListener('click', function() {
+      // Clear param keys
+      var keys = [];
+      for (var i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i));
+      keys.forEach(function(k) { if (k.indexOf('starseed-params-') === 0) localStorage.removeItem(k); });
+      // Clear terms
+      localStorage.removeItem('starseed-record-terms-v1');
+      // Clear audio (delete entire DB for reliability)
+      try { indexedDB.deleteDatabase('audio-vis'); } catch (_) {}
+      // Hide terms link + button
+      var tl = document.getElementById('rec-terms-link');
+      if (tl) tl.style.display = 'none';
+      btn.style.display = 'none';
+      hide();
+    });
+  })();
+  </script>
+
+  <script>
+  (function() {
+    var el = document.getElementById('version-entries');
+    if (!el) return;
+    fetch('versions.json').then(function(r) { return r.json(); }).then(function(versions) {
+      // Find last major entry (not the first)
+      var majorIdx = -1;
+      for (var i = 1; i < versions.length; i++) {
+        if (versions[i].major) { majorIdx = i; break; }
+      }
+      // Entries to show: [0] full, [1] faded + view-all, majorIdx full (if > 1)
+      var show = [{ entry: versions[0], faded: false }];
+      if (versions.length > 1) show.push({ entry: versions[1], faded: true });
+      if (majorIdx > 1) show.push({ entry: versions[majorIdx], faded: false });
+
+      var html = '';
+      show.forEach(function(item) {
+        var cls = item.faded ? ' faded-entry' : '';
+        html += '<div class="version-entry' + cls + '">';
+        html += '<h3>' + esc(item.entry.version) + ' — ' + esc(item.entry.date) + '</h3>';
+        html += '<p><em>' + esc(item.entry.summary) + '</em></p>';
+        item.entry.details.forEach(function(p) { html += '<p>' + esc(p) + '</p>'; });
+        if (item.faded) {
+          html += '<a class="view-all-link" href="versions.html">View All History</a>';
+        }
+        html += '</div>';
+      });
+      el.innerHTML = html;
+    });
+    function esc(s) {
+      var d = document.createElement('div'); d.textContent = s; return d.innerHTML;
     }
   })();
   </script>

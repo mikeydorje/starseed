@@ -5,6 +5,7 @@ const Recorder = (() => {
   const VIDEO_BITRATE = 12_000_000;
   const AUDIO_BITRATE = 128_000;
   const TERMS_KEY = 'starseed-record-terms-v1';
+  const PARAMS_PREFIX = 'starseed-params-';
   const FORMATS = [
     { name: '16x9', label: '16:9',  width: 1920, height: 1080 },
     { name: '1x1',  label: '1:1',   width: 1080, height: 1080 },
@@ -49,7 +50,33 @@ const Recorder = (() => {
   let panelSliders = [];
   let panelApplyPending = false;
   let arcParamDiv = null;
+  let zlSliderRef = null;
+  let savePending = null;
   const TOUCH_ONLY = 'ontouchstart' in window && !window.matchMedia('(pointer: fine)').matches;
+
+  // ── Param persistence ──
+  function scheduleParamSave() {
+    if (savePending) clearTimeout(savePending);
+    savePending = setTimeout(() => {
+      savePending = null;
+      const S = window.SCENE;
+      if (!S || !S.sceneName) return;
+      const data = {};
+      panelSliders.forEach(sl => {
+        data[sl.targetId] = parseInt(sl.input.value, 10);
+      });
+      if (zlSliderRef) data._aperture = parseInt(zlSliderRef.value, 10);
+      if (S.uniforms && S.uniforms.uBoundary) data._boundary = S.uniforms.uBoundary.value > 0.5 ? 1 : 0;
+      try { localStorage.setItem(PARAMS_PREFIX + S.sceneName, JSON.stringify(data)); } catch (_) {}
+    }, 300);
+  }
+
+  function loadSceneParams(sceneName) {
+    try {
+      const raw = localStorage.getItem(PARAMS_PREFIX + sceneName);
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) { return null; }
+  }
 
   function isSupported() {
     return typeof VideoEncoder !== 'undefined' && typeof AudioEncoder !== 'undefined';
@@ -941,6 +968,7 @@ const Recorder = (() => {
           if (valEl) valEl.textContent = sl.input.value;
         }
         schedulePanelApply();
+        scheduleParamSave();
       });
     });
 
@@ -963,6 +991,7 @@ const Recorder = (() => {
         }
       });
       schedulePanelApply();
+      scheduleParamSave();
     });
     ctrlPanel.appendChild(rBtn);
 
@@ -992,6 +1021,7 @@ const Recorder = (() => {
     zlLabel.className = 'cp-zoom-label';
     zlLabel.textContent = '\u23e3 50';
     const zlSlider = document.createElement('input');
+    zlSliderRef = zlSlider;
     zlSlider.type = 'range';
     zlSlider.className = 'cp-zoom-slider';
     zlSlider.min = '0';
@@ -1004,6 +1034,7 @@ const Recorder = (() => {
       zoomLock = -1 + (ui / 100) * 3;
       zlLabel.textContent = '\u23e3 ' + ui;
       if (activePreviewFmt) activatePreview(activePreviewFmt);
+      scheduleParamSave();
     });
     zoomRow.appendChild(zlLabel);
     zoomRow.appendChild(zlSlider);
@@ -1022,6 +1053,7 @@ const Recorder = (() => {
       S.uniforms.uBoundary.value = on ? 0.0 : 1.0;
       panelBdBtn.classList.toggle('active', !on);
       panelBdBtn.innerHTML = on ? bdOffSVG : bdOnSVG;
+      scheduleParamSave();
     });
     bdRow.appendChild(panelBdBtn);
     const bdLabel = document.createElement('span');
@@ -1042,6 +1074,41 @@ const Recorder = (() => {
       popBtn.title = 'Open controls in separate window';
       popBtn.addEventListener('click', openPopout);
       ctrlPanel.appendChild(popBtn);
+    }
+
+    // ── Restore saved params ──
+    const S2 = window.SCENE;
+    if (S2 && S2.sceneName) {
+      const saved = loadSceneParams(S2.sceneName);
+      if (saved) {
+        panelSliders.forEach(sl => {
+          if (saved[sl.targetId] !== undefined) {
+            const v = saved[sl.targetId];
+            sl.input.value = v;
+            sl.valSpan.textContent = v;
+            const target = document.getElementById(sl.targetId);
+            if (target) {
+              target.value = v;
+              const valEl = document.getElementById(sl.targetId + '-val');
+              if (valEl) valEl.textContent = v;
+            }
+          }
+        });
+        if (saved._aperture !== undefined && zlSliderRef) {
+          zlSliderRef.value = saved._aperture;
+          zoomLock = -1 + (saved._aperture / 100) * 3;
+          const zlLbl = zlSliderRef.parentElement.querySelector('.cp-zoom-label');
+          if (zlLbl) zlLbl.textContent = '\u23e3 ' + saved._aperture;
+        }
+        if (saved._boundary !== undefined && S2.uniforms && S2.uniforms.uBoundary) {
+          S2.uniforms.uBoundary.value = saved._boundary ? 1.0 : 0.0;
+          if (panelBdBtn) {
+            panelBdBtn.classList.toggle('active', !!saved._boundary);
+            panelBdBtn.innerHTML = saved._boundary ? bdOnSVG : bdOffSVG;
+          }
+        }
+        schedulePanelApply();
+      }
     }
   }
 
