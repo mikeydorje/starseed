@@ -1,5 +1,16 @@
 [
   {
+    "version": "v1.2.2",
+    "date": "April 2026",
+    "tag": "",
+    "summary": "Rotation refinements. Documentation cleanup.",
+    "details": [
+      "Improved rotation feel on select scenes — wider speed range, drift modulation, and smoother arc response.",
+      "The Basics restructured with section headings for easier scanning. Clarified framing, recording, and platform guidance."
+    ],
+    "major": false
+  },
+  {
     "version": "v1.2.1",
     "date": "April 2026",
     "tag": "",

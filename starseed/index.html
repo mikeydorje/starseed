@@ -74,7 +74,7 @@
       line-height: 1.5;
     }
     .about-lead {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 64px auto 0;
       padding: 0 40px;
     }
@@ -87,6 +87,7 @@
       padding: 0 40px;
       align-items: start;
     }
+    .about-lead .about { max-width: 670px; margin: 0 auto; }
     .about {
       font-size: 12px;
       line-height: 1.7;
@@ -184,6 +185,13 @@
       font-family: 'Segoe UI', system-ui, sans-serif;
     }
     .view-all-link:hover { color: rgba(255,255,255,0.5); }
+    .version-entry.major-entry {
+      border-top: 1px solid rgba(255,255,255,0.12);
+      margin-top: 18px;
+    }
+    .version-entry.major-entry h3 {
+      color: rgba(255,255,255,0.55);
+    }
     .version-history h3 {
       font-size: 11px;
       text-transform: uppercase;
@@ -342,11 +350,19 @@
   <div class="about-lead">
   <div class="about">
     <h2>The Basics</h2>
-    <p><strong>Starseed</strong> is an audio-reactive particle visualizer — upload a track or use your mic, and the visuals respond to your music in real time.</p>
-    <p>Visuals render in <strong>16:9</strong>, <strong>1:1</strong>, or <strong>9:16</strong>. <strong>⏣&nbsp;Aperture Scale</strong> adjusts the field of view, letting you reframe the composition for each format. The visuals are boundary aware and adapt accordingly — <strong>Boundary</strong> toggles this on/off. The <strong>eight control sliders</strong> per scene are intentionally abstract — names like <em>Epoch</em>, <em>Flux</em>, and <em>Tremolo</em> hint at their function. Some parameters ride slow time-based <strong>drift cycles</strong> and reveal themselves gradually. Move things around, hit <strong>Randomize</strong>, and let the scene surprise you. Each scene remembers your settings between visits.</p>
-    <p>Hit <strong>⏺︎ Record</strong> to capture video — the app renders offline at <strong>60 fps</strong> using WebCodecs, muxing straight to MP4. No server, no upload, everything stays in your browser. While rendering, keep this tab in the foreground and your device awake — the browser needs the screen active to draw each frame. On <strong>iOS</strong>, rendered videos won't include audio yet — screen-record or sync audio later, or come back on desktop. <strong>Listen mode</strong> reacts to your mic in real time — no record button here, use screen record. Currently, your recording will differ from the onscreen preview as drift cycles rotate, but your settings — which control the underlying math — are identical.</p>
-    <p>Every scene has a <strong>narrative arc</strong> that evolves the visuals over the length of the track — shorter audio means a more compressed, dynamic arc. Trimming your audio to the target length before uploading (say, 60 seconds for a Reel) will give you a tighter, more dynamic render than recording a full song and cutting the video after. <strong>Experiment with rotation.</strong> The aspect ratio framing also opens up creative options: a 16:9 render rotated 90° in your editor becomes a completely different 9:16 composition, and even a 1:1 rotated 45° can give a fresh perspective.</p>
-    <p><strong>Built for desktop</strong>, primarily tested on Windows/Chrome, MacOS/Chrome and iOS/Safari. Mobile works — fun with Listen mode — but for the full experience, a desktop browser is the way to go.</p>
+    <p><strong>Starseed</strong> is an audio-reactive particle visualizer. Upload a track or use your mic — visuals respond in real time.</p>
+    <h3>Format &amp; Framing</h3>
+    <p>Renders in <strong>16:9</strong>, <strong>1:1</strong>, or <strong>9:16</strong>. <strong>⏣&nbsp;Aperture Scale</strong> adjusts field of view. <strong>Boundary</strong> makes visuals edge-aware. Experiment with rotation — a saved video at 16:9 rotated 90° becomes a different 9:16; even a rotated 1:1 creates a new composition.</p>
+    <h3>Controls</h3>
+    <p><strong>Eight sliders per scene.</strong> Names like <em>Epoch</em>, <em>Flux</em>, and <em>Tremolo</em> hint at function. Some ride slow <strong>drift cycles</strong> that reveal themselves over time. <strong>Randomize</strong> to explore. Settings are saved between visits.</p>
+    <h3>Narrative Arc</h3>
+    <p>Each scene evolves visuals over the <strong>track length</strong> — shorter audio means a tighter, more dynamic arc. Trim to your target length before uploading for best results — 60 seconds for a Reel gives a more dynamic render than cutting a full song after.</p>
+    <h3>Recording</h3>
+    <p><strong>⏺︎ Record</strong> renders offline at <strong>60 fps</strong> to MP4 via WebCodecs. No server — everything stays in your browser. Keep the tab in foreground and device awake while rendering. On <strong>iOS</strong>, video won't include audio — screen-record or sync later. Drift cycles may render at different phases than the preview, but settings control the same math.</p>
+    <h3>Live</h3>
+    <p><strong>Listen mode</strong> uses your mic or line input in real time — the browser handles device selection. Plug into a projector for live audio-reactive visuals at a show. No record button — use screen record. More coming.</p>
+    <h3>Platform</h3>
+    <p><strong>Desktop</strong> recommended — tested on Windows/Chrome, MacOS/Chrome, iOS/Safari.</p>
   </div>
   </div>
 
@@ -407,7 +423,7 @@
       <span>Starseed is free and open source.</span><br>
       <a href="#" id="rec-terms-link" style="display:none;color:rgba(255,255,255,0.25);font-size:10px;text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.08);transition:color 0.2s" onmouseover="this.style.color='rgba(255,255,255,0.5)'" onmouseout="this.style.color='rgba(255,255,255,0.25)'">Recording terms ✓</a>
       <div id="idx-terms-overlay" style="position:fixed;inset:0;z-index:9999;background:rgba(5,5,10,0.85);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.35s ease">
-        <div style="max-width:380px;padding:28px 26px 22px;background:rgba(12,12,20,0.92);border:1px solid rgba(255,255,255,0.08);border-radius:14px;font-family:'Segoe UI',system-ui,sans-serif;color:rgba(255,255,255,0.7);font-size:12px;line-height:1.6">
+        <div style="max-width:380px;padding:28px 26px 22px;background:rgba(12,12,20,0.92);border:1px solid rgba(255,255,255,0.08);border-radius:14px;font-family:'Segoe UI',system-ui,sans-serif;color:rgba(255,255,255,0.7);font-size:12px;line-height:1.6;text-align:left">
           <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:3px;color:rgba(255,255,255,0.5);margin:0 0 16px;font-weight:400">Before you record</h3>
           <p style="margin:0 0 12px">Your final videos are yours. Download them, edit them, share them as you like.</p>
           <p style="margin:0 0 12px">You're responsible for the music you use. If you own it or made it, you're good. If you're using someone else's music and sharing publicly, that's between you and the rights holder — platforms may remove or demonetize it. Credit the artist. Help people find the music.</p>
@@ -542,11 +558,11 @@
       // Entries to show: [0] full, [1] faded + view-all, majorIdx full (if > 1)
       var show = [{ entry: versions[0], faded: false }];
       if (versions.length > 1) show.push({ entry: versions[1], faded: true });
-      if (majorIdx > 1) show.push({ entry: versions[majorIdx], faded: false });
+      if (majorIdx > 1) show.push({ entry: versions[majorIdx], faded: false, major: true });
 
       var html = '';
       show.forEach(function(item) {
-        var cls = item.faded ? ' faded-entry' : '';
+        var cls = item.faded ? ' faded-entry' : (item.major ? ' major-entry' : '');
         html += '<div class="version-entry' + cls + '">';
         html += '<h3>' + esc(item.entry.version) + ' — ' + esc(item.entry.date) + '</h3>';
         html += '<p><em>' + esc(item.entry.summary) + '</em></p>';

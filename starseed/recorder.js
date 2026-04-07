@@ -1299,6 +1299,7 @@ const Recorder = (() => {
         <h3>Before you record</h3>
         <p>Your final videos are yours. Download them, edit them, share them as you like.</p>
         <p>You're responsible for the music you use. If you own it or made it, you're good. If you're using someone else's music and sharing publicly, that's between you and the rights holder — platforms may remove or demonetize it. Credit the artist. Help people find the music.</p>
+        ${TOUCH_ONLY ? '<p style="color:rgba(255,255,255,0.45)">On <strong>iOS</strong>, recorded video won\'t include audio — screen-record or sync separately. <strong>Android</strong> is untested.</p>' : ''}
         <label id="rec-terms-check">
           <input type="checkbox" id="rec-terms-cb">
           <span>I understand — let's go</span>

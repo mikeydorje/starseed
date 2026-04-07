@@ -149,7 +149,7 @@ function computeSeedValues() {
   const scatter = sliders.p1.value / 100, breeze = sliders.p2.value / 100, lift = sliders.p3.value / 100, ephemeral = sliders.p4.value / 100;
   return {
     scatter: 0.1 + scatter * 0.9, breeze: 0.1 + breeze * 0.9, lift: lift, ephemeral: 0.1 + ephemeral * 0.9,
-    rotSpeedY: 0.002 + breeze * 0.022, rotSpeedX: 0.001 + breeze * 0.011, smoothing: 0.97 - scatter * 0.22, detail: Math.floor(5 + scatter * 14),
+    rotSpeedY: 0.003 + breeze * 0.045, rotSpeedX: 0.0015 + breeze * 0.022, smoothing: 0.97 - scatter * 0.22, detail: Math.floor(5 + scatter * 14),
     hiss: sliders.p5.value / 100, epoch: sliders.p6.value / 100, threshold: sliders.p7.value / 100, flux: sliders.p8.value / 100
   };
 }
@@ -294,8 +294,10 @@ function animate() {
   particles.position.z = Math.sin(dt * TP / (DRIFT_BASE * 2.5) + 0.9 + (_dp._pz || 0)) * driftAmt * 0.4;
   const breathe = 1.0 + Math.sin(dt * TP / (DRIFT_BASE * 2.8) + (_dp._br || 0)) * 0.09 * (arc.rot || 1);
   particles.scale.setScalar(breathe);
-  particles.rotation.y = elapsed * rotSpeedY * (arc.rot || 1) * 0.35;
-  particles.rotation.x = elapsed * rotSpeedX * 0.12 * (arc.rot || 1) * 0.35;
+  const rd = Math.sin(dt * TP / (DRIFT_BASE * 0.92) + (_dp._rd || 0)) * 0.28;
+  const td = Math.sin(dt * TP / (DRIFT_BASE * 1.38) + 2.0 + (_dp._td || 0)) * 0.20;
+  particles.rotation.y = elapsed * rotSpeedY * (arc.rot || 1) * (1.0 + rd) * 0.7;
+  particles.rotation.x = elapsed * rotSpeedX * 0.12 * (arc.rot || 1) * (1.0 + td) * 0.7;
   renderer.render(scene, camera);
 }
 
@@ -318,8 +320,8 @@ window.SCENE = {
   get rotSpeedY() { return rotSpeedY; }, get rotSpeedX() { return rotSpeedX; },
   get bakedArcScale() { return bakedEpoch; }, get bakedDriftScale() { return bakedFlux; },
   driftCycles, DRIFT_BASE, get _driftPhases() { return _driftPhases; }, uniformMap: uMap,
-  rotXMult: 0.042, rotDriftScale: 0, tiltDriftScale: 0,
-  rotYMult: 0.35, posDrift: { amt: 0.16, px: 2.0, py: 1.7, ys: 0.7, pz: 2.5, zs: 0.4 }, breathe: { period: 2.8, amp: 0.09 },
+  rotXMult: 0.042, rotDriftScale: 0.28, tiltDriftScale: 0.20,
+  rotYMult: 0.7, posDrift: { amt: 0.16, px: 2.0, py: 1.7, ys: 0.7, pz: 2.5, zs: 0.4 }, breathe: { period: 2.8, amp: 0.09 },
   storyArc,
   get currentBuffer() { return currentBuffer; }, get audioDuration() { return audioDuration; },
   get audioContext() { return audioContext; }, get analyser() { return analyser; },

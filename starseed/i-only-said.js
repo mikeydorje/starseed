@@ -33,8 +33,9 @@ const vertexShader = `
     float w = sin(uTime * 0.012 + aPhase * 3.0) * uWhisper * 0.2 * (0.25 + gAmp * 0.75);
     float wY = cos(uTime * 0.009 + aNode * 4.0) * uWhisper * 0.15;
 
-    // Frost: crystalline snap — sharp, icy audio-reactive snap
-    float snap = (0.25 + gAmp * 0.75) * uFrost * 0.32 * sin(aPhase * 5.0 + uTime * 0.02);
+    // Frost: crystalline snap — sharp, icy audio-reactive angular displacement
+    float snap = (0.25 + gAmp * 0.75) * uFrost * 0.55 * sin(aPhase * 5.0 + uTime * 0.02);
+    float snapY = (0.25 + gAmp * 0.75) * uFrost * 0.3 * cos(aPhase * 5.0 + uTime * 0.025);
 
     // Brittleness: grid distortion — the lattice breaks apart softly
     float crack = sin(uTime * 0.006 + aNode * 7.0 + aPhase * 2.0) * uBrittleness * 0.25;
@@ -50,13 +51,13 @@ const vertexShader = `
 
     vec3 newPos = position;
     newPos.x += w + snap + echo + wanderX;
-    newPos.y += wY + crack + wanderY;
+    newPos.y += wY + crack + snapY + wanderY;
     newPos.z += crackZ + wanderZ;
 
     vNode = aNode;
     vFreqAmp = gAmp;
     vPhase = aPhase;
-    vCrystal = gAmp * uFrost * 0.5 + snap * 0.3;
+    vCrystal = gAmp * uFrost * 0.6 + snap * 0.3 + snapY * 0.2;
 
     vec4 mvPos = modelViewMatrix * vec4(newPos, 1.0);
     // Wide halos — sparse points create overlapping glow fields
@@ -163,7 +164,7 @@ function computeSeedValues() {
   const whisper = whisperLegacyValue(+sliders.p1.value) / 100, frost = sliders.p2.value / 100, brittleness = sliders.p3.value / 100, echo = sliders.p4.value / 100;
   return {
     whisper: 0.1 + whisper * 0.9, frost: 0.1 + frost * 0.9, brittleness: brittleness, echo: 0.1 + echo * 0.9,
-    rotSpeedY: 0.002 + frost * 0.018, rotSpeedX: 0.001 + frost * 0.009, smoothing: 0.96 - whisper * 0.2, detail: Math.floor(4 + whisper * 8),
+    rotSpeedY: 0.003 + frost * 0.04, rotSpeedX: 0.0015 + frost * 0.02, smoothing: 0.96 - whisper * 0.2, detail: Math.floor(4 + whisper * 8),
     hiss: sliders.p5.value / 100, epoch: sliders.p6.value / 100, threshold: sliders.p7.value / 100, flux: sliders.p8.value / 100
   };
 }
@@ -297,8 +298,10 @@ function animate() {
   particles.position.z = Math.sin(dt * TP / (DRIFT_BASE * 3.2) + 0.9 + (_dp._pz || 0)) * driftAmt * 0.35;
   const breathe = 1.0 + Math.sin(dt * TP / (DRIFT_BASE * 3.5) + (_dp._br || 0)) * 0.08 * (arc.rot || 1);
   particles.scale.setScalar(breathe);
-  particles.rotation.y = elapsed * rotSpeedY * (arc.rot || 1) * 0.35;
-  particles.rotation.x = elapsed * rotSpeedX * 0.12 * (arc.rot || 1) * 0.35;
+  const rd = Math.sin(dt * TP / (DRIFT_BASE * 0.92) + (_dp._rd || 0)) * 0.28;
+  const td = Math.sin(dt * TP / (DRIFT_BASE * 1.38) + 2.0 + (_dp._td || 0)) * 0.2;
+  particles.rotation.y = elapsed * rotSpeedY * (arc.rot || 1) * (1.0 + rd) * 0.7;
+  particles.rotation.x = elapsed * rotSpeedX * 0.12 * (arc.rot || 1) * (1.0 + td) * 0.7;
   renderer.render(scene, camera);
 }
 
@@ -321,8 +324,8 @@ window.SCENE = {
   get rotSpeedY() { return rotSpeedY; }, get rotSpeedX() { return rotSpeedX; },
   get bakedArcScale() { return bakedEpoch; }, get bakedDriftScale() { return bakedFlux; },
   driftCycles, DRIFT_BASE, get _driftPhases() { return _driftPhases; }, uniformMap: uMap,
-  rotXMult: 0.042, rotDriftScale: 0, tiltDriftScale: 0,
-  rotYMult: 0.35, posDrift: { amt: 0.12, px: 2.8, py: 2.2, ys: 0.6, pz: 3.2, zs: 0.35 }, breathe: { period: 3.5, amp: 0.08 },
+  rotXMult: 0.042, rotDriftScale: 0.28, tiltDriftScale: 0.2,
+  rotYMult: 0.7, posDrift: { amt: 0.12, px: 2.8, py: 2.2, ys: 0.6, pz: 3.2, zs: 0.35 }, breathe: { period: 3.5, amp: 0.08 },
   storyArc,
   get currentBuffer() { return currentBuffer; }, get audioDuration() { return audioDuration; },
   get audioContext() { return audioContext; }, get analyser() { return analyser; },
