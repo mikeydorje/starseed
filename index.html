@@ -2,10 +2,582 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="refresh" content="0;url=starseed/" />
-  <title>Redirecting…</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Starseed</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%23222'/%3E%3Cg stroke='%23333' stroke-width='1.2' stroke-linecap='round'%3E%3Cline x1='16' y1='2' x2='16' y2='10'/%3E%3Cline x1='16' y1='22' x2='16' y2='30'/%3E%3Cline x1='2' y1='16' x2='10' y2='16'/%3E%3Cline x1='22' y1='16' x2='30' y2='16'/%3E%3Cline x1='6.1' y1='6.1' x2='11.8' y2='11.8'/%3E%3Cline x1='20.2' y1='20.2' x2='25.9' y2='25.9'/%3E%3Cline x1='25.9' y1='6.1' x2='20.2' y2='11.8'/%3E%3Cline x1='11.8' y1='20.2' x2='6.1' y2='25.9'/%3E%3C/g%3E%3C/svg%3E" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #050508;
+      color: #ccc;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .app-title {
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: 6px;
+      color: #555;
+      margin-top: 36px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      color: #444;
+      margin-bottom: 48px;
+    }
+    .scenes {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .scene-card {
+      width: 220px;
+      padding: 32px 24px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s;
+    }
+    .scene-card:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.12);
+      transform: translateY(-4px);
+    }
+    .scene-card.scroll-target {
+      border-color: rgba(255,255,255,0.25);
+    }
+    .scene-card .icon {
+      font-size: 36px;
+      margin-bottom: 16px;
+      display: block;
+    }
+    .scene-card .name {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .scene-card .desc {
+      font-size: 11px;
+      color: #555;
+      line-height: 1.5;
+    }
+    .about-lead {
+      max-width: 1400px;
+      margin: 64px auto 0;
+      padding: 0 40px;
+    }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      max-width: 1200px;
+      margin: 32px auto 32px;
+      padding: 0 40px;
+      align-items: start;
+    }
+    .about-lead .about { max-width: 670px; margin: 0 auto; }
+    .about {
+      font-size: 12px;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.3);
+      text-align: left;
+    }
+    @media (max-width: 860px) {
+      .about-lead {
+        max-width: 680px;
+        padding: 0 24px;
+      }
+      .about-lead .about { text-align: center; }
+      .about-grid {
+        grid-template-columns: 1fr;
+        max-width: 680px;
+        padding: 0 24px;
+        gap: 48px;
+      }
+      .about-grid .about { text-align: center; }
+    }
+    .about h2 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      color: #444;
+      margin-bottom: 20px;
+      font-weight: 400;
+    }
+    .about h3 {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.42);
+      margin: 16px 0 8px;
+      font-weight: 500;
+    }
+    .about p { margin: 0 0 14px; }
+    .about strong { color: rgba(255,255,255,0.45); font-weight: 600; }
+    .about a { color: rgba(255,255,255,0.35); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.1); transition: color 0.2s; }
+    .about a:hover { color: rgba(255,255,255,0.6); }
+    .version-history {
+      max-width: 1400px;
+      margin: 48px auto 32px;
+      padding: 0 40px;
+      font-size: 12px;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.3);
+      text-align: left;
+    }
+    .version-history h2 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 5px;
+      color: #444;
+      margin-bottom: 14px;
+      font-weight: 400;
+      text-align: center;
+    }
+    .version-history .version-lead {
+      margin: 0 0 28px;
+      text-align: center;
+    }
+    .version-history .version-entry {
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding-top: 22px;
+      margin-top: 0;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .version-entry.faded-entry {
+      position: relative;
+      max-height: 110px;
+      overflow: hidden;
+    }
+    .version-entry.faded-entry::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 70px;
+      background: linear-gradient(to bottom, rgba(5,5,8,0), rgba(5,5,8,1));
+      pointer-events: none;
+    }
+    .view-all-link {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1;
+      color: rgba(255,255,255,0.25);
+      font-size: 10px;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      transition: color 0.2s;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    .view-all-link:hover { color: rgba(255,255,255,0.5); }
+    .version-entry.major-entry {
+      border-top: 1px solid rgba(255,255,255,0.12);
+      margin-top: 18px;
+    }
+    .version-entry.major-entry h3 {
+      color: rgba(255,255,255,0.55);
+    }
+    .version-history h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: rgba(255,255,255,0.42);
+      margin: 0 0 12px;
+      font-weight: 500;
+    }
+    .version-history p { margin: 0 0 14px; }
+    .version-history strong { color: rgba(255,255,255,0.45); font-weight: 600; }
+    @media (max-width: 860px) {
+      .version-history {
+        padding: 0 24px;
+      }
+    }
+    .beta-tag {
+      display: block; font-size: 7px; letter-spacing: 3px; color: #333;
+      margin-top: 2px; font-weight: 400; text-align: center;
+    }
+    .site-footer {
+      width: 100%;
+      max-width: 900px;
+      margin: 26px auto 30px;
+      padding: 0 24px;
+      text-align: center;
+      color: rgba(255,255,255,0.28);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+    .footer-socials {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .footer-social {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.45);
+      text-decoration: none;
+      transition: all 0.25s;
+      background: rgba(255,255,255,0.01);
+    }
+    .footer-social:hover {
+      color: rgba(255,255,255,0.85);
+      border-color: rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.06);
+      transform: translateY(-2px);
+    }
+    .footer-social svg { width: 15px; height: 15px; }
+    .footer-copy strong { color: rgba(255,255,255,0.48); font-weight: 600; }
+  </style>
 </head>
 <body>
-  <script>location.replace('starseed/');</script>
+  <div class="app-title">STARSEED<span class="beta-tag">BETA</span></div>
+  <h1>select scene</h1>
+  <div class="scenes">
+    <a href="smbh" id="smbh" class="scene-card">
+      <span class="icon">◉︎</span>
+      <div class="name">Binary SMBH</div>
+    </a>
+    <a href="sakura" id="sakura" class="scene-card">
+      <span class="icon">✿︎</span>
+      <div class="name">Sakura</div>
+    </a>
+    <a href="lotus" id="lotus" class="scene-card">
+      <span class="icon">✾</span>
+      <div class="name">Lotus</div>
+    </a>
+    <a href="spore" id="spore" class="scene-card">
+      <span class="icon">❋</span>
+      <div class="name">Spore</div>
+    </a>
+    <a href="filament" id="filament" class="scene-card">
+      <span class="icon">⟋</span>
+      <div class="name">Filament</div>
+    </a>
+    <a href="lattice" id="lattice" class="scene-card">
+      <span class="icon">⬡</span>
+      <div class="name">Lattice</div>
+    </a>
+    <a href="mathematical-pony" id="mathematical-pony" class="scene-card">
+      <span class="icon">♪︎</span>
+      <div class="name">Mathematical Pony</div>
+    </a>
+    <a href="pi" id="pi" class="scene-card">
+      <span class="icon">π</span>
+      <div class="name">Pi</div>
+    </a>
+    <a href="tau" id="tau" class="scene-card">
+      <span class="icon">τ</span>
+      <div class="name">Tau</div>
+    </a>
+    <a href="phi" id="phi" class="scene-card">
+      <span class="icon">φ</span>
+      <div class="name">Phi</div>
+    </a>
+    <a href="euler" id="euler" class="scene-card">
+      <span class="icon">e</span>
+      <div class="name">Euler</div>
+    </a>
+    <a href="feigenbaum" id="feigenbaum" class="scene-card">
+      <span class="icon">δ</span>
+      <div class="name">Feigenbaum</div>
+    </a>
+    <a href="ember" id="ember" class="scene-card">
+      <span class="icon">◎</span>
+      <div class="name">Ember</div>
+    </a>
+    <a href="only-shallow" id="only-shallow" class="scene-card">
+      <span class="icon">◐</span>
+      <div class="name">Only Shallow</div>
+    </a>
+    <a href="to-here-knows-when" id="to-here-knows-when" class="scene-card">
+      <span class="icon">☾︎</span>
+      <div class="name">To Here Knows When</div>
+    </a>
+    <a href="i-only-said" id="i-only-said" class="scene-card">
+      <span class="icon">≋</span>
+      <div class="name">I Only Said</div>
+    </a>
+    <a href="sometimes" id="sometimes" class="scene-card">
+      <span class="icon">♡︎</span>
+      <div class="name">Sometimes</div>
+    </a>
+    <a href="blown-a-wish" id="blown-a-wish" class="scene-card">
+      <span class="icon">✺</span>
+      <div class="name">Blown A Wish</div>
+    </a>
+    <!-- WIP: hidden from grid until ready
+    <a href="wip" class="scene-card">
+      <span class="icon">◌</span>
+      <div class="name">WIP</div>
+    </a>
+    -->
+  </div>
+  <div style="text-align:center;margin:32px 0 0">
+    <a href="#" id="clear-settings-btn" style="color:rgba(255,255,255,0.2);font-size:10px;text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.06);transition:color 0.2s;font-family:'Segoe UI',system-ui,sans-serif" onmouseover="this.style.color='rgba(255,255,255,0.45)'" onmouseout="this.style.color='rgba(255,255,255,0.2)'">Clear Settings</a>
+  </div>
+  <div id="clear-overlay" style="position:fixed;inset:0;z-index:9999;background:rgba(5,5,10,0.85);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.35s ease">
+    <div style="max-width:380px;padding:28px 26px 22px;background:rgba(12,12,20,0.92);border:1px solid rgba(255,255,255,0.08);border-radius:14px;font-family:'Segoe UI',system-ui,sans-serif;color:rgba(255,255,255,0.7);font-size:12px;line-height:1.6">
+      <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:3px;color:rgba(255,255,255,0.5);margin:0 0 16px;font-weight:400">Clear settings</h3>
+      <p style="margin:0 0 18px">This will clear your uploaded audio and all saved settings. Sliders will start at random on your next visit to each scene.</p>
+      <div style="display:flex;gap:12px;justify-content:flex-end">
+        <button id="clear-cancel" style="padding:6px 16px;border:1px solid rgba(255,255,255,0.12);border-radius:6px;background:transparent;color:rgba(255,255,255,0.5);font-size:11px;cursor:pointer;font-family:inherit;transition:color 0.2s" onmouseover="this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Cancel</button>
+        <button id="clear-confirm" style="padding:6px 16px;border:1px solid rgba(255,80,80,0.3);border-radius:6px;background:rgba(255,80,80,0.1);color:rgba(255,80,80,0.7);font-size:11px;cursor:pointer;font-family:inherit;font-weight:600;transition:color 0.2s,background 0.2s" onmouseover="this.style.background='rgba(255,80,80,0.2)';this.style.color='rgba(255,80,80,0.9)'" onmouseout="this.style.background='rgba(255,80,80,0.1)';this.style.color='rgba(255,80,80,0.7)'">Clear</button>
+      </div>
+    </div>
+  </div>
+  <div class="about-lead">
+  <div class="about">
+    <h2>The Basics</h2>
+    <p><strong>Starseed</strong> is an audio-reactive particle visualizer. Upload a track or use your mic — visuals respond in real time.</p>
+    <h3>Format &amp; Framing</h3>
+    <p>Renders in <strong>16:9</strong>, <strong>1:1</strong>, or <strong>9:16</strong>. <strong>⏣&nbsp;Aperture Scale</strong> adjusts field of view. <strong>Boundary</strong> makes visuals edge-aware. Experiment with rotation — a saved video at 16:9 rotated 90° becomes a different 9:16; even a rotated 1:1 creates a new composition.</p>
+    <h3>Controls</h3>
+    <p><strong>Eight sliders per scene.</strong> Names like <em>Epoch</em>, <em>Flux</em>, and <em>Tremolo</em> hint at function. Some ride slow <strong>drift cycles</strong> that reveal themselves over time. <strong>Randomize</strong> to explore. Settings are saved between visits.</p>
+    <h3>Narrative Arc</h3>
+    <p>Each scene evolves visuals over the <strong>track length</strong> — shorter audio means a tighter, more dynamic arc. Trim to your target length before uploading for best results — 60 seconds for a Reel gives a more dynamic render than cutting a full song after.</p>
+    <h3>Recording</h3>
+    <p><strong>⏺︎ Record</strong> renders offline at <strong>60 fps</strong> to MP4 via WebCodecs. No server — everything stays in your browser. Keep the tab in foreground and device awake while rendering. On <strong>iOS</strong>, video won't include audio — screen-record or sync later. Drift cycles may render at different phases than the preview, but settings control the same math.</p>
+    <h3>Live</h3>
+    <p><strong>Listen mode</strong> uses your mic or line input in real time — the browser handles device selection. Plug into a projector for live audio-reactive visuals at a show. No record button — use screen record. More coming.</p>
+    <h3>Platform</h3>
+    <p><strong>Desktop</strong> recommended — tested on Windows/Chrome, MacOS/Chrome, iOS/Safari.</p>
+  </div>
+  </div>
+
+  <div class="about-grid">
+  <div class="about">
+    <h2>How it works</h2>
+    <p>Starseed is an <strong>audio-reactive visualizer</strong> — every particle on screen moves in direct response to your music. Drop in any audio file, and the <strong>Web Audio API</strong> splits the signal into 64 frequency bands in real time. Those bands push, pull, and reshape a cloud of particles driven by <strong>custom GPU shaders</strong> every frame. <em>Everything runs on your device's GPU — modern hardware handles this easily, but low-power devices may drop frames.</em></p>
+    <p>Eight sliders per scene let you <strong>tune the physics</strong>: spread, drift, colour, threshold, and more. Aspect ratio, aperture scale, and boundary settings can dynamically alter the visuals in unique ways. A <em>narrative arc</em> slowly evolves the parameters over the length of the track so the visuals tell a story.</p>
+    <p>Behind the scenes, slow drift cycles — long <strong>sine waves</strong> between 1 and 5 minutes — continually shift rotation and scale. Combined with the arc, this means no two plays look the same.</p>
+    <p>Built with <strong>♡︎</strong>, <strong>Three.js</strong>, <strong>WebGL</strong>, and zero build tools — <strong>plain JavaScript and GPU shader math</strong>. No AI, no machine learning, no server-side processing. Just code, trigonometry, and your music on static files. Developed on Windows Subsystem for Linux.</p>
+  </div>
+
+  <div class="about">
+    <h2>Community Use &amp; Credits</h2>
+    <h3>Free to Create</h3>
+    <p><strong>Starseed is free to use:</strong> no signup, no paywall, no watermark. Create, render, and share your videos.</p>
+    <h3>Attribution</h3>
+    <p>If you publish Starseed renders publicly, please credit <strong>Mikey Dorje</strong> and tag/link <strong>@mikeydorje</strong> in your caption, description, or post metadata.</p>
+    <h3>Ownership &amp; License</h3>
+    <p><strong>Your music remains 100% yours. Your final videos are yours to publish and monetize.</strong> Starseed source code is open source and licensed for reuse and modification under the project license terms.</p>
+    <h3>Privacy</h3>
+    <p><strong>Your audio never leaves your device.</strong> Files are decoded in the browser and cached in local storage — nothing is uploaded anywhere. For the smoothest experience, keep local browser storage enabled (cookies/local site data) so Starseed can remember your uploaded audio and saved settings.</p>
+  </div>
+  </div>
+
+  <div class="version-history">
+    <h2>Version History</h2>
+    <p class="version-lead">Actively evolving — new scenes, features, and refinements ongoing.</p>
+    <div id="version-entries"></div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-socials">
+      <a class="footer-social" href="https://github.com/mikeydorje" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.3c-3.3.7-4-1.4-4-1.4-.6-1.4-1.3-1.8-1.3-1.8-1.1-.8.1-.8.1-.8 1.2.1 1.9 1.3 1.9 1.3 1.1 1.9 2.8 1.4 3.4 1.1.1-.8.4-1.4.8-1.8-2.7-.3-5.5-1.3-5.5-6a4.7 4.7 0 0 1 1.2-3.2 4.4 4.4 0 0 1 .1-3.1s1-.3 3.3 1.2a11.3 11.3 0 0 1 6 0C17.3 5.3 18.3 5.6 18.3 5.6a4.4 4.4 0 0 1 .1 3.1 4.7 4.7 0 0 1 1.2 3.2c0 4.7-2.8 5.7-5.5 6 .4.3.8 1 .8 2v3c0 .3.2.7.8.6A12 12 0 0 0 12 .5Z"/></svg>
+      </a>
+      <a class="footer-social" href="https://mikeydorje.bandcamp.com" target="_blank" rel="noopener noreferrer" aria-label="Bandcamp">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.5 6h11L11.2 18H.2L6.5 6Z"/></svg>
+      </a>
+      <a class="footer-social" href="https://youtube.com/@mikeydorje" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 7.2a3 3 0 0 0-2.1-2.1C19.5 4.5 12 4.5 12 4.5s-7.5 0-9.4.6A3 3 0 0 0 .5 7.2 31.6 31.6 0 0 0 0 12c0 1.6.1 3.2.5 4.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.6 31.6 0 0 0 24 12c0-1.6-.1-3.2-.5-4.8ZM9.6 15.5V8.5L15.8 12l-6.2 3.5Z"/></svg>
+      </a>
+      <a class="footer-social" href="https://instagram.com/mikeydorje" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+      </a>
+      <a class="footer-social" href="https://soundcloud.com/mikeydorje" target="_blank" rel="noopener noreferrer" aria-label="SoundCloud">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.7 10.4c.4-1.8 2-3.1 3.8-3.1 1.5 0 2.9.9 3.5 2.3 1.9.2 3.4 1.8 3.4 3.8 0 2.1-1.7 3.8-3.8 3.8H6.4A2.9 2.9 0 0 1 3.5 14c0-1.6 1.3-2.9 2.9-2.9.4 0 .8.1 1.2.3.5-.5 1.2-.8 2.1-1Z"/></svg>
+      </a>
+      <a class="footer-social" href="https://open.spotify.com/artist/2i0W2ULTtPnarfN4Xtk2R9" target="_blank" rel="noopener noreferrer" aria-label="Spotify">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.8a10.2 10.2 0 1 0 0 20.4 10.2 10.2 0 0 0 0-20.4Zm4.7 14.7a.8.8 0 0 1-1.1.3 9.8 9.8 0 0 0-7.2-.8.8.8 0 1 1-.5-1.5 11.5 11.5 0 0 1 8.3.9.8.8 0 0 1 .5 1.1Zm1.3-2.8a1 1 0 0 1-1.3.4 12.4 12.4 0 0 0-8.9-1 1 1 0 1 1-.5-2 14.4 14.4 0 0 1 10.3 1.2 1 1 0 0 1 .4 1.4Zm.1-3a14.7 14.7 0 0 0-10.5-1.2 1.2 1.2 0 0 1-.7-2.3 17 17 0 0 1 12.2 1.4 1.2 1.2 0 1 1-1 2.1Z"/></svg>
+      </a>
+      <a class="footer-social" href="https://dev.to/mikeydorje" target="_blank" rel="noopener noreferrer" aria-label="DEV">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.42 10.05c-.18-.16-.46-.23-.84-.23H6v4.36h.58c.37 0 .67-.08.84-.23.2-.18.31-.5.31-.95v-2c0-.45-.12-.77-.31-.95zm16.17-6.3H.41C.18 3.75 0 3.94 0 4.19v15.62c0 .25.18.44.41.44h23.18c.23 0 .41-.19.41-.44V4.19c0-.25-.18-.44-.41-.44zM8.69 14.26c0 .9-.55 1.74-1.69 1.74H5v-8h2.01c1.13 0 1.68.84 1.68 1.74v4.52zm4.72-4.37h-2.36v1.73h1.43v1.12h-1.43v1.73h2.36v1.12h-2.84c-.55 0-1.04-.52-1.04-1.06V9.07c0-.54.5-1.06 1.04-1.06h2.84v1.88zm5.69 4.87c-.5 1.17-1.21 1.3-1.77 1.3-.56 0-1.27-.13-1.76-1.3l-1.88-6.71h1.38l1.5 5.59 1.5-5.59h1.38l-1.35 6.71z"/></svg>
+      </a>
+    </div>
+    <div class="footer-copy">
+      <span>&copy; <span id="footer-year"></span> <strong>Mikey Dorje</strong></span><br>
+      <span>Starseed is free and open source.</span><br>
+      <a href="#" id="rec-terms-link" style="display:none;color:rgba(255,255,255,0.25);font-size:10px;text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.08);transition:color 0.2s" onmouseover="this.style.color='rgba(255,255,255,0.5)'" onmouseout="this.style.color='rgba(255,255,255,0.25)'">Recording terms ✓</a>
+      <div id="idx-terms-overlay" style="position:fixed;inset:0;z-index:9999;background:rgba(5,5,10,0.85);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.35s ease">
+        <div style="max-width:380px;padding:28px 26px 22px;background:rgba(12,12,20,0.92);border:1px solid rgba(255,255,255,0.08);border-radius:14px;font-family:'Segoe UI',system-ui,sans-serif;color:rgba(255,255,255,0.7);font-size:12px;line-height:1.6;text-align:left">
+          <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:3px;color:rgba(255,255,255,0.5);margin:0 0 16px;font-weight:400">Before you record</h3>
+          <p style="margin:0 0 12px">Your final videos are yours. Download them, edit them, share them as you like.</p>
+          <p style="margin:0 0 12px">You're responsible for the music you use. If you own it or made it, you're good. If you're using someone else's music and sharing publicly, that's between you and the rights holder — platforms may remove or demonetize it. Credit the artist. Help people find the music.</p>
+          <label style="display:flex;align-items:center;gap:10px;margin-top:18px;cursor:pointer;font-size:12px;color:rgba(255,255,255,0.5);transition:color 0.2s" onmouseover="this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">
+            <input type="checkbox" id="idx-terms-cb" style="width:16px;height:16px;cursor:pointer;accent-color:rgba(255,80,80,0.7)">
+            <span style="font-weight:600;color:rgba(255,255,255,0.6)">I understand — let's go</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="audio-store.js"></script>
+  <script>
+  (function(){
+    var id = sessionStorage.getItem('starseed-scroll');
+    if (!id) return;
+    sessionStorage.removeItem('starseed-scroll');
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('scroll-target');
+    history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+    requestAnimationFrame(function(){
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  })();
+  </script>
+  <script>
+  (function(){
+    var el = document.getElementById('footer-year');
+    if (el) el.textContent = String(new Date().getFullYear());
+
+    var TERMS_KEY = 'starseed-record-terms-v1';
+    var link = document.getElementById('rec-terms-link');
+    var overlay = document.getElementById('idx-terms-overlay');
+    var cb = document.getElementById('idx-terms-cb');
+    if (link && localStorage.getItem(TERMS_KEY) === '1') {
+      link.style.display = 'inline';
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        cb.checked = localStorage.getItem(TERMS_KEY) === '1';
+        overlay.style.opacity = '1';
+        overlay.style.pointerEvents = 'auto';
+      });
+    }
+    if (overlay) {
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+          overlay.style.opacity = '0';
+          overlay.style.pointerEvents = 'none';
+        }
+      });
+    }
+    if (cb) {
+      cb.addEventListener('change', function() {
+        if (this.checked) {
+          localStorage.setItem(TERMS_KEY, '1');
+          link.style.display = 'inline';
+        } else {
+          localStorage.removeItem(TERMS_KEY);
+          link.style.display = 'none';
+        }
+      });
+    }
+  })();
+  </script>
+  <script>
+  (function(){
+    var btn = document.getElementById('clear-settings-btn');
+    var ov = document.getElementById('clear-overlay');
+    var cancelBtn = document.getElementById('clear-cancel');
+    var confirmBtn = document.getElementById('clear-confirm');
+
+    // Only show if there are params or audio to clear
+    function hasStoredData() {
+      for (var i = 0; i < localStorage.length; i++) {
+        if (localStorage.key(i).indexOf('starseed-params-') === 0) return true;
+      }
+      return false;
+    }
+    function checkVisibility() {
+      // Check localStorage params first (sync)
+      if (hasStoredData()) { btn.style.display = 'inline'; return; }
+      // Check IndexedDB audio (async)
+      if (typeof AudioStore !== 'undefined' && AudioStore.load) {
+        AudioStore.load().then(function(data) {
+          btn.style.display = data ? 'inline' : 'none';
+        }).catch(function() {});
+      }
+    }
+    if (btn) {
+      btn.style.display = 'none';
+      checkVisibility();
+    }
+
+    function hide() { ov.style.opacity = '0'; ov.style.pointerEvents = 'none'; }
+    if (btn) btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      ov.style.opacity = '1'; ov.style.pointerEvents = 'auto';
+    });
+    if (cancelBtn) cancelBtn.addEventListener('click', hide);
+    if (ov) ov.addEventListener('click', function(e) { if (e.target === ov) hide(); });
+    if (confirmBtn) confirmBtn.addEventListener('click', function() {
+      // Clear param keys
+      var keys = [];
+      for (var i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i));
+      keys.forEach(function(k) { if (k.indexOf('starseed-params-') === 0) localStorage.removeItem(k); });
+      // Clear terms
+      localStorage.removeItem('starseed-record-terms-v1');
+      // Clear audio (delete entire DB for reliability)
+      try { indexedDB.deleteDatabase('audio-vis'); } catch (_) {}
+      // Hide terms link + button
+      var tl = document.getElementById('rec-terms-link');
+      if (tl) tl.style.display = 'none';
+      btn.style.display = 'none';
+      hide();
+    });
+  })();
+  </script>
+
+  <script>
+  (function() {
+    var el = document.getElementById('version-entries');
+    if (!el) return;
+    fetch('versions.json').then(function(r) { return r.json(); }).then(function(versions) {
+      // Find last major entry (not the first)
+      var majorIdx = -1;
+      for (var i = 1; i < versions.length; i++) {
+        if (versions[i].major) { majorIdx = i; break; }
+      }
+      // Entries to show: [0] full, [1] faded + view-all, majorIdx full (if > 1)
+      var show = [{ entry: versions[0], faded: false }];
+      if (versions.length > 1) show.push({ entry: versions[1], faded: true });
+      if (majorIdx > 1) show.push({ entry: versions[majorIdx], faded: false, major: true });
+
+      var html = '';
+      show.forEach(function(item) {
+        var cls = item.faded ? ' faded-entry' : (item.major ? ' major-entry' : '');
+        html += '<div class="version-entry' + cls + '">';
+        html += '<h3>' + esc(item.entry.version) + ' — ' + esc(item.entry.date) + '</h3>';
+        html += '<p><em>' + esc(item.entry.summary) + '</em></p>';
+        item.entry.details.forEach(function(p) { html += '<p>' + esc(p) + '</p>'; });
+        if (item.faded) {
+          html += '<a class="view-all-link" href="versions/">View All History</a>';
+        }
+        html += '</div>';
+      });
+      el.innerHTML = html;
+    });
+    function esc(s) {
+      var d = document.createElement('div'); d.textContent = s; return d.innerHTML;
+    }
+  })();
+  </script>
 </body>
 </html>
