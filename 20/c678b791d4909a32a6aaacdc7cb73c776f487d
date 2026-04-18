@@ -1,0 +1,22 @@
+index.html
+  h_b2f6efe2daa9cd 383,552
+versions/index.html
+  h_b2f6efe2daa9cd 123
+versions.json
+  h_b2f6efe2daa9cd 3-11
+recorder.js
+  h_b2f6efe2daa9cd 902-905,1431
+mic-input.js
+  h_b2f6efe2daa9cd 55,104,123,160
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "20c678b791d4909a32a6aaacdc7cb73c776f487d",
+  "prompts": {},
+  "humans": {
+    "h_b2f6efe2daa9cd": {
+      "author": "Mikey Dorje"
+    }
+  }
+}
