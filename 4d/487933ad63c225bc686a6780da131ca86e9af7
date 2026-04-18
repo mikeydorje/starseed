@@ -1,0 +1,14 @@
+.gitignore
+  h_b2f6efe2daa9cd 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "4d487933ad63c225bc686a6780da131ca86e9af7",
+  "prompts": {},
+  "humans": {
+    "h_b2f6efe2daa9cd": {
+      "author": "Mikey Dorje"
+    }
+  }
+}
