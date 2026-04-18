@@ -380,9 +380,9 @@
     <h3>Free to Create</h3>
     <p><strong>Starseed is free to use:</strong> no signup, no paywall, no watermark. Create, render, and share your videos.</p>
     <h3>Attribution</h3>
-    <p>If you publish Starseed renders publicly, please credit <strong>Mikey Dorje</strong> and tag/link <strong>@mikeydorje</strong> in your caption, description, or post metadata.</p>
+    <p>If you publish Starseed renders publicly, please link to <strong>strs.dev</strong> or tag <strong>@mikeydorje</strong> in your caption, description, or post metadata.</p>
     <h3>Ownership &amp; License</h3>
-    <p><strong>Your music remains 100% yours. Your final videos are yours to publish and monetize.</strong> Starseed source code is open source and licensed for reuse and modification under the project license terms.</p>
+    <p><strong>Your music remains 100% yours. Your final videos are yours to publish and share.</strong> Starseed source code is open source and licensed for reuse and modification under the project license terms.</p>
     <h3>Privacy</h3>
     <p><strong>Your audio never leaves your device.</strong> Files are decoded in the browser and cached in local storage — nothing is uploaded anywhere. For the smoothest experience, keep local browser storage enabled (cookies/local site data) so Starseed can remember your uploaded audio and saved settings.</p>
   </div>
@@ -549,7 +549,7 @@
   (function() {
     var el = document.getElementById('version-entries');
     if (!el) return;
-    fetch('versions.json').then(function(r) { return r.json(); }).then(function(versions) {
+    fetch('versions.json?v=' + Date.now()).then(function(r) { return r.json(); }).then(function(versions) {
       // Find last major entry (not the first)
       var majorIdx = -1;
       for (var i = 1; i < versions.length; i++) {

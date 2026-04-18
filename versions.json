@@ -1,5 +1,15 @@
 [
   {
+    "version": "v1.2.3",
+    "date": "April 2026",
+    "tag": "",
+    "summary": "Fullscreen transport overhaul. Listen mode cleanup.",
+    "details": [
+      "Transport auto-hides during playback — mouse or click to reveal. Popout control panel works inside fullscreen and stays open on pause. Updated exit-fullscreen icon and attribution text."
+    ],
+    "major": false
+  },
+  {
     "version": "v1.2.2",
     "date": "April 2026",
     "tag": "",

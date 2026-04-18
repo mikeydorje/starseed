@@ -52,6 +52,8 @@ const Recorder = (() => {
   let arcParamDiv = null;
   let zlSliderRef = null;
   let savePending = null;
+  let popoutTransBtn = null;
+  let closePopoutBtn = null;
   const TOUCH_ONLY = 'ontouchstart' in window && !window.matchMedia('(pointer: fine)').matches;
 
   // ── Param persistence ──
@@ -482,9 +484,11 @@ const Recorder = (() => {
 
   function injectStyles() {
     const s = document.createElement('style');
+    const recRight = TOUCH_ONLY ? 60 : 104;
+    const pauseRight = TOUCH_ONLY ? 104 : 148;
     s.textContent = `
       #rec-btn {
-        position:fixed; bottom:16px; right:104px; z-index:20;
+        position:fixed; bottom:16px; right:${recRight}px; z-index:20;
         width:36px; height:36px; padding:0;
         background:rgba(10,10,20,0.5); border:1px solid rgba(255,255,255,0.1);
         border-radius:8px; cursor:pointer;
@@ -496,7 +500,7 @@ const Recorder = (() => {
       }
       #rec-btn .rec-dot { width:14px; height:14px; border-radius:50%; background:currentColor; }
       #rec-pause-btn {
-        position:fixed; bottom:16px; right:148px; z-index:20;
+        position:fixed; bottom:16px; right:${pauseRight}px; z-index:20;
         width:36px; height:36px; padding:0;
         background:rgba(10,10,20,0.5); border:1px solid rgba(255,255,255,0.1);
         border-radius:8px; cursor:pointer;
@@ -506,6 +510,24 @@ const Recorder = (() => {
       }
       #rec-pause-btn:hover {
         color:#fff; background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.3);
+      }
+      #popout-transport-btn, #close-popout-btn {
+        position:fixed; bottom:16px; right:60px; z-index:20;
+        width:36px; height:36px; padding:0;
+        background:rgba(10,10,20,0.5); border:1px solid rgba(255,255,255,0.1);
+        border-radius:8px; cursor:pointer;
+        display:none; align-items:center; justify-content:center;
+        color:rgba(255,255,255,0.35); transition:all 0.3s; backdrop-filter:blur(6px);
+      }
+      #popout-transport-btn svg, #close-popout-btn svg { width:16px; height:16px; }
+      #popout-transport-btn:hover {
+        color:rgba(255,255,255,0.7); background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.2);
+      }
+      #close-popout-btn {
+        color:rgba(220,100,80,0.6);
+      }
+      #close-popout-btn:hover {
+        color:rgba(220,100,80,0.9); background:rgba(220,100,80,0.12); border-color:rgba(220,100,80,0.3);
       }
       /* ── Right-side control panel ── */
       #ctrl-panel {
@@ -613,12 +635,9 @@ const Recorder = (() => {
         border:1px solid rgba(255,255,255,0.06); border-radius:6px;
         cursor:pointer; transition:all 0.3s;
       }
-      #ctrl-panel .cp-popout:hover:not(.disabled) {
+      #ctrl-panel .cp-popout:hover {
         color:rgba(255,255,255,0.6); border-color:rgba(255,255,255,0.15);
         background:rgba(255,255,255,0.04);
-      }
-      #ctrl-panel .cp-popout.disabled {
-        opacity:0.25; cursor:default; pointer-events:none;
       }
       #ctrl-panel .cp-popout svg { width:11px; height:11px; }
       #rec-overlay {
@@ -818,6 +837,28 @@ const Recorder = (() => {
     pauseBtn.addEventListener('click', togglePause);
     document.body.appendChild(pauseBtn);
 
+    // ── Transport popout / close-popout buttons (desktop only) ──
+    if (!TOUCH_ONLY) {
+      const closeSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+      popoutTransBtn = document.createElement('button');
+      popoutTransBtn.id = 'popout-transport-btn';
+      popoutTransBtn.title = 'Pop out controls';
+      popoutTransBtn.innerHTML = popoutSVG;
+      popoutTransBtn.addEventListener('click', openPopout);
+      document.body.appendChild(popoutTransBtn);
+
+      closePopoutBtn = document.createElement('button');
+      closePopoutBtn.id = 'close-popout-btn';
+      closePopoutBtn.title = 'Close popout \u2014 return controls to screen';
+      closePopoutBtn.innerHTML = closeSVG;
+      closePopoutBtn.addEventListener('click', function() {
+        closePopout();
+        syncPanelFromControls();
+      });
+      document.body.appendChild(closePopoutBtn);
+    }
+
     overlayEl = document.createElement('div');
     overlayEl.id = 'rec-overlay';
     document.body.appendChild(overlayEl);
@@ -827,6 +868,19 @@ const Recorder = (() => {
     ctrlPanel.id = 'ctrl-panel';
     buildPanel();
     document.body.appendChild(ctrlPanel);
+
+    // Keep transport visible while user interacts with control panel
+    // During touch: hold open (no timer). On release: start 3s countdown.
+    ['touchstart', 'touchmove', 'pointerdown'].forEach(evt => {
+      ctrlPanel.addEventListener(evt, () => {
+        if (window.SCENE && window.SCENE._holdTransport) window.SCENE._holdTransport();
+      }, { passive: true });
+    });
+    ['touchend', 'pointerup'].forEach(evt => {
+      ctrlPanel.addEventListener(evt, () => {
+        if (window.SCENE && window.SCENE._showTransport) window.SCENE._showTransport(4000);
+      }, { passive: true });
+    });
 
     // Watch for slider changes — mark params dirty so controls hide until next play
     document.querySelectorAll('#controls input[type="range"]').forEach(el => {
@@ -843,7 +897,8 @@ const Recorder = (() => {
       if ((st === 'playing' || st === 'listening') && lastPlayState !== st) {
         paramsDirty = false;
         syncPanelFromControls();
-        if (window.innerWidth < window.innerHeight) document.body.classList.add('toolbar-hidden');
+        // Start with transport hidden — auto-hide system will show on interaction
+        document.body.classList.add('toolbar-hidden');
         if (activePreviewFmt && _resizedDuringPreview) {
           _resizedDuringPreview = false;
           activatePreview(activePreviewFmt);
@@ -855,23 +910,31 @@ const Recorder = (() => {
       lastPlayState = st;
 
       const mobileFS = TOUCH_ONLY && !!document.fullscreenElement;
-      const showControls = (st === 'playing' || st === 'paused') && !paramsDirty;
-      recordBtn.style.display = (showControls && !mobileFS) ? 'flex' : 'none';
-      pauseBtn.style.display = (showControls && !mobileFS) ? 'flex' : 'none';
+      const showControls = (st === 'playing' || st === 'paused' || st === 'listening') && !paramsDirty;
+      const popoutOpen = !!(ctrlPopup && !ctrlPopup.closed);
+
+      // Transport buttons: show during playback/listening (auto-hide CSS handles FS visibility)
+      // Hide record and pause buttons in listen mode — listen-pause handles it
+      const isListening = st === 'listening';
+      recordBtn.style.display = (showControls && !mobileFS && !isListening) ? 'flex' : 'none';
+      pauseBtn.style.display = (showControls && !mobileFS && !isListening) ? 'flex' : 'none';
       pauseBtn.innerHTML = st === 'paused' ? '\u25b6\uFE0E' : '\u2759\u2759';
       pauseBtn.title = st === 'paused' ? 'Resume' : 'Pause';
 
+      // Popout / close-popout transport buttons (desktop only)
+      if (popoutTransBtn) {
+        popoutTransBtn.style.display = (showControls && !popoutOpen && !TOUCH_ONLY) ? 'flex' : 'none';
+      }
+      if (closePopoutBtn) {
+        closePopoutBtn.style.display = (showControls && popoutOpen && !TOUCH_ONLY) ? 'flex' : 'none';
+      }
+
       // Control panel: show during playing or listening, hide when popout is active
-      // On mobile fullscreen, hide panel — user taps canvas to pause/resume
-      const showPanel = (st === 'playing' || st === 'listening') && !paramsDirty && !(ctrlPopup && !ctrlPopup.closed) && !mobileFS;
+      const showPanel = (st === 'playing' || st === 'listening') && !paramsDirty && !popoutOpen && !mobileFS;
       ctrlPanel.style.display = showPanel ? 'flex' : 'none';
 
       // Hide arc slider during listen mode (narrative arc has no effect without file playback)
       if (arcParamDiv) arcParamDiv.style.display = st === 'listening' ? 'none' : '';
-
-      // Disable popout button when in fullscreen (window.open exits fullscreen)
-      const popoutBtn = ctrlPanel.querySelector('.cp-popout');
-      if (popoutBtn) popoutBtn.classList.toggle('disabled', !!document.fullscreenElement);
 
       // Clear preview if neither playback controls nor panel are showing
       if (!showControls && !showPanel && activePreviewFmt) deactivatePreview();
@@ -1134,7 +1197,8 @@ const Recorder = (() => {
 
   /* ── Popout lifecycle ── */
   function openPopout() {
-    if (document.fullscreenElement) return;
+    // On single-monitor, window.open() will cause browser to exit fullscreen.
+    // On dual-monitor, fullscreen persists on the external display — no action needed.
     if (ctrlPopup && !ctrlPopup.closed) { ctrlPopup.focus(); return; }
     const S = window.SCENE;
     if (!S) return;
@@ -1181,8 +1245,6 @@ const Recorder = (() => {
     const S = window.SCENE;
     const st = S.playState;
     if (st === 'playing' && S.audioContext) {
-      // Close popout on pause to avoid stale dual-control state
-      closePopout();
       S.audioContext.suspend();
       document.querySelector('canvas').click();
     } else if (st === 'paused') {
@@ -1381,7 +1443,7 @@ const Recorder = (() => {
       </div>
       <div class="rec-note">
         Free to use, no watermark, no signup, no install.<br>
-        If you post or share your video, please credit and tag <strong>@mikeydorje</strong>.
+        If you post or share your video, please link to <strong>strs.dev</strong> or tag <strong>@mikeydorje</strong>.
       </div>
     `;
 
