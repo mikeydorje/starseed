@@ -1,0 +1,31 @@
+spore.js
+  5138409699a0b312 588
+recorder.js
+  h_b2f6efe2daa9cd 380-381,385,462
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "ee414bb1a8a8d036663dd0e735f7c960c8c62b07",
+  "prompts": {
+    "5138409699a0b312": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "a028c9cb-d2da-4f12-9507-55da8ee94e59",
+        "model": "unknown"
+      },
+      "human_author": "Mikey Dorje",
+      "messages": [],
+      "total_additions": 7,
+      "total_deletions": 5,
+      "accepted_lines": 2,
+      "overriden_lines": 1,
+      "messages_url": "https://usegitai.com/cas/6a440874787b7efc2c064b124b3c580399711edffeef7ad0e6985494d8315207"
+    }
+  },
+  "humans": {
+    "h_b2f6efe2daa9cd": {
+      "author": "Mikey Dorje"
+    }
+  }
+}
