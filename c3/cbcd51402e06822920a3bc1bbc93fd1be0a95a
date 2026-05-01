@@ -1,0 +1,100 @@
+i-only-said.html
+  9d63b8272c0399c1 55
+tau.html
+  9d63b8272c0399c1 86
+wip.html
+  9d63b8272c0399c1 55
+sometimes.js
+  5138409699a0b312 328
+only-shallow.js
+  5138409699a0b312 307
+to-here-knows-when.html
+  9d63b8272c0399c1 55
+recorder.js
+  h_b2f6efe2daa9cd 39,901-902,1376,1386,1412,1660-1663
+phi.html
+  9d63b8272c0399c1 70
+to-here-knows-when.js
+  5138409699a0b312 301
+i-only-said.js
+  5138409699a0b312 327
+lattice.html
+  9d63b8272c0399c1 173
+mathematical-pony.html
+  9d63b8272c0399c1 70
+mic-input.js
+  9d63b8272c0399c1 106-107
+index.html
+  9d63b8272c0399c1 440
+spectrum.html
+  9d63b8272c0399c1 68
+lotus.html
+  9d63b8272c0399c1 173
+sometimes.html
+  9d63b8272c0399c1 55
+only-shallow.html
+  9d63b8272c0399c1 55
+tracker.js
+  h_b2f6efe2daa9cd 1-16,20-110
+  9d63b8272c0399c1 17-19
+feigenbaum.html
+  9d63b8272c0399c1 70
+filament.html
+  9d63b8272c0399c1 173
+spore.html
+  9d63b8272c0399c1 173
+euler.html
+  9d63b8272c0399c1 70
+blown-a-wish.js
+  5138409699a0b312 323
+sakura.html
+  9d63b8272c0399c1 173
+ember.html
+  9d63b8272c0399c1 173
+blown-a-wish.html
+  9d63b8272c0399c1 55
+pi.html
+  9d63b8272c0399c1 174
+smbh.html
+  9d63b8272c0399c1 173
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "c3cbcd51402e06822920a3bc1bbc93fd1be0a95a",
+  "prompts": {
+    "5138409699a0b312": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "a028c9cb-d2da-4f12-9507-55da8ee94e59",
+        "model": "unknown"
+      },
+      "human_author": "Mikey Dorje",
+      "messages": [],
+      "total_additions": 5,
+      "total_deletions": 223,
+      "accepted_lines": 5,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/6b55cc9f42eb6264d5da5f23e37b6680c78280a7e4a4558b9a3a9bfe1422972c"
+    },
+    "9d63b8272c0399c1": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "b19df8b9-e448-4fd2-9b76-3f6e0ee3d83d",
+        "model": "unknown"
+      },
+      "human_author": "Mikey Dorje",
+      "messages": [],
+      "total_additions": 26,
+      "total_deletions": 2,
+      "accepted_lines": 26,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/b7c4d23ba743c00eba5382b233ae81007b2a76abff72c80e69cbdf7172a9065e"
+    }
+  },
+  "humans": {
+    "h_b2f6efe2daa9cd": {
+      "author": "Mikey Dorje"
+    }
+  }
+}
