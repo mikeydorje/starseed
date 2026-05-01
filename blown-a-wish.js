@@ -320,7 +320,7 @@ window.SCENE = {
   get rotSpeedY() { return rotSpeedY; }, get rotSpeedX() { return rotSpeedX; },
   get bakedArcScale() { return bakedEpoch; }, get bakedDriftScale() { return bakedFlux; },
   driftCycles, DRIFT_BASE, get _driftPhases() { return _driftPhases; }, uniformMap: uMap,
-  rotXMult: 0.042, rotDriftScale: 0.28, tiltDriftScale: 0.20,
+  rotXMult: 0.084, rotDriftScale: 0.28, tiltDriftScale: 0.20,
   rotYMult: 0.7, posDrift: { amt: 0.16, px: 2.0, py: 1.7, ys: 0.7, pz: 2.5, zs: 0.4 }, breathe: { period: 2.8, amp: 0.09 },
   storyArc,
   get currentBuffer() { return currentBuffer; }, get audioDuration() { return audioDuration; },

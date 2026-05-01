@@ -36,6 +36,7 @@ const Recorder = (() => {
   let zoomLock = 0.5;
 
   let recording = false;
+  let renderCompleteFired = false;
   let cancelRef = { cancelled: false };
   let recordBtn = null;
   let pauseBtn = null;
@@ -897,8 +898,8 @@ const Recorder = (() => {
       if ((st === 'playing' || st === 'listening') && lastPlayState !== st) {
         paramsDirty = false;
         syncPanelFromControls();
-        // Start with transport hidden — auto-hide system will show on interaction
-        document.body.classList.add('toolbar-hidden');
+        // Show transport immediately on play/listen start, auto-hide timer then kicks in
+        if (window.SCENE && window.SCENE._showTransport) window.SCENE._showTransport();
         if (activePreviewFmt && _resizedDuringPreview) {
           _resizedDuringPreview = false;
           activatePreview(activePreviewFmt);
@@ -1372,6 +1373,7 @@ const Recorder = (() => {
     document.getElementById('rec-terms-cb').addEventListener('change', function () {
       if (this.checked) {
         localStorage.setItem(TERMS_KEY, '1');
+        try { if (window.track) window.track('record_terms_accept', { scene: window.SCENE && window.SCENE.sceneName }); } catch (_) {}
         termsOverlay.classList.remove('active');
         openFormatPicker();
       } else {
@@ -1381,6 +1383,7 @@ const Recorder = (() => {
   }
 
   function showTermsOrRecord() {
+    try { if (window.track) window.track('record_click', { scene: window.SCENE && window.SCENE.sceneName }); } catch (_) {}
     if (localStorage.getItem(TERMS_KEY) === '1') {
       openFormatPicker();
       return;
@@ -1406,6 +1409,7 @@ const Recorder = (() => {
     if (activePreviewFmt) deactivatePreview();
     closePopout();
     recording = true;
+    renderCompleteFired = false;
     cancelRef = { cancelled: false };
     recordBtn.style.display = 'none';
     pauseBtn.style.display = 'none';
@@ -1653,6 +1657,10 @@ const Recorder = (() => {
           st.url = URL.createObjectURL(blob);
           blobUrls.push(st.url);
           updateCard(f.name);
+          if (!renderCompleteFired) {
+            renderCompleteFired = true;
+            try { if (window.track) window.track('render_complete', { scene: window.SCENE && window.SCENE.sceneName }); } catch (_) {}
+          }
         } catch (err) {
           console.error('Render failed for ' + f.name + ':', err);
           st.state = 'error';

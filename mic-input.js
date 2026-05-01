@@ -103,6 +103,8 @@
       listenBtn.classList.add('active');
       showListenPause();
 
+      try { if (window.track) window.track('listen_start'); } catch (_) {}
+
     } catch (err) {
       console.warn('Mic access denied:', err.message);
       stopListening();
