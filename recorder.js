@@ -377,10 +377,12 @@ const Recorder = (() => {
 
     const setup = createRenderSetup(config, width, height);
 
+    const _warmup = (config.recordWarmupLoops || 0) * (config.audioDuration || 0);
+
     for (let i = 0; i < totalFrames; i++) {
       if (cancelRef.cancelled) break;
 
-      setFrameState(setup, config, frameData[i], i / fps, i / totalFrames);
+      setFrameState(setup, config, frameData[i], (i / fps) + _warmup, i / totalFrames);
       setup.renderer.render(setup.scene, setup.camera);
 
       const frame = new VideoFrame(setup.renderer.domElement, {
@@ -457,6 +459,7 @@ const Recorder = (() => {
       rotYMult:        S.rotYMult || 1,
       posDrift:        S.posDrift || null,
       breathe:         S.breathe || null,
+      recordWarmupLoops: S.recordWarmupLoops || 0,
     };
   }
 

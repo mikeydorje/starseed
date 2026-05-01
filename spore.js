@@ -585,6 +585,7 @@ window.SCENE = {
   get bakedArcScale() { return bakedChronicle; },
   get bakedDriftScale() { return bakedMeander; },
   driftCycles, DRIFT_BASE, get _driftPhases() { return _driftPhases; },
+  recordWarmupLoops: 5,
   uniformMap,
   rotXMult: 1.0, rotDriftScale: 0.06, tiltDriftScale: 0.03,
   storyArc,
