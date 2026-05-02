@@ -1,0 +1,60 @@
+mathematical-pony.js
+  5138409699a0b312 279
+spore.js
+  5138409699a0b312 396
+feigenbaum.js
+  5138409699a0b312 272
+lotus.js
+  5138409699a0b312 393
+phi.js
+  5138409699a0b312 252
+smbh.js
+  5138409699a0b312 385
+lattice.js
+  5138409699a0b312 411
+sakura.js
+  5138409699a0b312 421
+ember.js
+  5138409699a0b312 401
+euler.js
+  5138409699a0b312 264
+i-only-said.js
+  5138409699a0b312 252
+blown-a-wish.js
+  5138409699a0b312 248
+sometimes.js
+  5138409699a0b312 253
+pi.js
+  5138409699a0b312 406
+to-here-knows-when.js
+  5138409699a0b312 226
+tau.js
+  5138409699a0b312 297
+only-shallow.js
+  5138409699a0b312 232
+filament.js
+  5138409699a0b312 389
+wip.js
+  5138409699a0b312 232
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "4c9914cf96d71783974fa0ff938eb9755fe1a9fd",
+  "prompts": {
+    "5138409699a0b312": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "a028c9cb-d2da-4f12-9507-55da8ee94e59",
+        "model": "unknown"
+      },
+      "human_author": "Mikey Dorje",
+      "messages": [],
+      "total_additions": 19,
+      "total_deletions": 0,
+      "accepted_lines": 19,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/3419a41af36b862963d28e5c5f95d76a58e6f8a9dc2e8a223d368c99d1ecef06"
+    }
+  }
+}
