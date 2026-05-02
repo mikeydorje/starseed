@@ -350,7 +350,7 @@ const clock = new THREE.Clock(), DRIFT_BASE = 108;
 const driftCycles = { winding:{period:DRIFT_BASE,depth:0.3}, orbit:{period:DRIFT_BASE*0.786,depth:0.35}, phase:{period:DRIFT_BASE*1.272,depth:0.25}, revolution:{period:DRIFT_BASE*0.618,depth:0.3} };
 const uMap = { winding:'uWinding', orbit:'uOrbit', phase:'uPhase', revolution:'uRevolution' };
 let _driftPhases = {};
-function _initDriftPhases() { const T = Math.PI * 2; for (const k in driftCycles) _driftPhases[k] = Math.random() * T; _driftPhases._px = Math.random() * T; _driftPhases._py = Math.random() * T; _driftPhases._pz = Math.random() * T; _driftPhases._br = Math.random() * T; _driftPhases._rd = Math.random() * T; _driftPhases._td = Math.random() * T; }
+function _initDriftPhases() { if (_driftPhases && _driftPhases._rd != null) return; const T = Math.PI * 2; for (const k in driftCycles) _driftPhases[k] = Math.random() * T; _driftPhases._px = Math.random() * T; _driftPhases._py = Math.random() * T; _driftPhases._pz = Math.random() * T; _driftPhases._br = Math.random() * T; _driftPhases._rd = Math.random() * T; _driftPhases._td = Math.random() * T; }
 
 function animate() {
   requestAnimationFrame(animate);

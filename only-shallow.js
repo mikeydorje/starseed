@@ -260,7 +260,7 @@ const driftCycles = { tremolo: { period: DRIFT_BASE, depth: 0.3 }, feedback: { p
 const uMap = { tremolo: 'uTremolo', feedback: 'uFeedback', saturation: 'uSaturation', tapeHead: 'uTapeHead' };
 let _envelope = 0;
 let _driftPhases = {};
-function _initDriftPhases() { const T = Math.PI * 2; for (const k in driftCycles) _driftPhases[k] = Math.random() * T; _driftPhases._px = Math.random() * T; _driftPhases._py = Math.random() * T; _driftPhases._pz = Math.random() * T; _driftPhases._br = Math.random() * T; _driftPhases._rd = Math.random() * T; _driftPhases._td = Math.random() * T; }
+function _initDriftPhases() { if (_driftPhases && _driftPhases._rd != null) return; const T = Math.PI * 2; for (const k in driftCycles) _driftPhases[k] = Math.random() * T; _driftPhases._px = Math.random() * T; _driftPhases._py = Math.random() * T; _driftPhases._pz = Math.random() * T; _driftPhases._br = Math.random() * T; _driftPhases._rd = Math.random() * T; _driftPhases._td = Math.random() * T; }
 
 function animate() {
   requestAnimationFrame(animate);
