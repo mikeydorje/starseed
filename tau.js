@@ -363,7 +363,7 @@ function animate() {
     for (const k in raw) arc[k] = 1 + (raw[k] - 1) * bakedEpoch;
   }
   const TP = Math.PI * 2;
-  const _ds = (playState === 'playing' && audioDuration > 0) ? DRIFT_BASE / Math.max(12, Math.min(120, audioDuration * 0.4)) : 1, dt = elapsed * _ds, _dp = _driftPhases;
+  const _ds = (playState === 'playing' && audioDuration > 0) ? DRIFT_BASE / Math.max(12, Math.min(120, audioDuration * 0.4)) : 1, _motionT = (playState === 'playing' && audioDuration > 0 && audioStartTime > 0) ? ((audioContext.currentTime - audioStartTime) % audioDuration) : elapsed, dt = (_motionT + audioDuration * 5) * _ds, _dp = _driftPhases;
   for (const k in driftCycles) {
     const { period, depth } = driftCycles[k];
     const sd = depth * (0.3 + bakedFlux * 1.4);

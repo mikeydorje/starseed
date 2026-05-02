@@ -492,6 +492,7 @@ function storyArc(progress) {
 
 const clock = new THREE.Clock();
 
+const DRIFT_WARMUP_LOOPS = 5;
 const DRIFT_BASE = 108;
 const driftCycles = {
   scatter:   { period: DRIFT_BASE * 1.000, depth: 0.30 },
@@ -515,10 +516,16 @@ function animate() {
   const elapsed = clock.getElapsedTime();
   uniforms.uTime.value = elapsed;
 
+  // Song-tied motion clock — resets every loop, freezes when paused/idle.
+  // This is what the recorder uses (i/fps), so live and render match exactly.
+  let motionT = 0;
+  if (playState === 'playing' && audioDuration > 0 && audioStartTime > 0) {
+    motionT = ((audioContext.currentTime - audioStartTime) % audioDuration);
+  }
+
   let arcMult = { scatter: 1, germinate: 1, canopy: 1, root: 1, rot: 1 };
   if (playState === 'playing' && audioDuration > 0 && audioStartTime > 0) {
-    const songElapsed = audioContext.currentTime - audioStartTime;
-    const progress = (songElapsed / audioDuration) % 1;
+    const progress = motionT / audioDuration;
     const rawArc = storyArc(progress);
     for (const k in rawArc) {
       arcMult[k] = 1.0 + (rawArc[k] - 1.0) * bakedChronicle;
@@ -526,7 +533,12 @@ function animate() {
   }
 
   const TWO_PI = Math.PI * 2;
-  const _ds = (playState === 'playing' && audioDuration > 0) ? DRIFT_BASE / Math.max(12, Math.min(120, audioDuration * 0.4)) : 1, dt = elapsed * _ds, _dp = _driftPhases;
+  // Drift uses song-time PLUS a fixed warm-up offset so we sit in the rich
+  // beat region of the sine cycles, not the quiet early region. The offset
+  // is in song-loops (e.g. 5 = "as if 5 loops have already played"). Both
+  // live and render apply the same offset → identical output.
+  const _driftOffset = audioDuration * (DRIFT_WARMUP_LOOPS || 0);
+  const _ds = (playState === 'playing' && audioDuration > 0) ? DRIFT_BASE / Math.max(12, Math.min(120, audioDuration * 0.4)) : 1, dt = (motionT + _driftOffset) * _ds, _dp = _driftPhases;
   for (const key in driftCycles) {
     const { period, depth } = driftCycles[key];
     const scaledDepth = depth * (0.3 + bakedMeander * 1.4);
@@ -552,8 +564,8 @@ function animate() {
   const rotDrift = Math.sin(dt * TWO_PI / (DRIFT_BASE * 0.92) + (_dp._rd || 0)) * 0.06;
   const tiltDrift = Math.sin(dt * TWO_PI / (DRIFT_BASE * 1.38) + 2.0 + (_dp._td || 0)) * 0.03;
 
-  particles.rotation.y = elapsed * rotSpeedY * (arcMult.rot || 1) * (1.0 + rotDrift);
-  particles.rotation.x = elapsed * rotSpeedX * (arcMult.rot || 1) * (1.0 + tiltDrift);
+  particles.rotation.y = motionT * rotSpeedY * (arcMult.rot || 1) * (1.0 + rotDrift);
+  particles.rotation.x = motionT * rotSpeedX * (arcMult.rot || 1) * (1.0 + tiltDrift);
 
   renderer.render(scene, camera);
 }
@@ -585,7 +597,7 @@ window.SCENE = {
   get bakedArcScale() { return bakedChronicle; },
   get bakedDriftScale() { return bakedMeander; },
   driftCycles, DRIFT_BASE, get _driftPhases() { return _driftPhases; },
-  recordWarmupLoops: 5,
+  driftWarmupLoops: DRIFT_WARMUP_LOOPS,
   uniformMap,
   rotXMult: 1.0, rotDriftScale: 0.06, tiltDriftScale: 0.03,
   storyArc,

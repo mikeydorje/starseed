@@ -253,7 +253,10 @@ const Recorder = (() => {
     const TWO_PI = Math.PI * 2;
     const _ad = config.audioDuration || 0;
     const _ds = _ad > 0 ? config.DRIFT_BASE / Math.max(12, Math.min(120, _ad * 0.4)) : 1;
-    const dt = time * _ds, _dp = config._driftPhases || {};
+    // Drift gets song-time + warmup offset (sits in rich beat region).
+    // Rotation uses raw `time` so visible spin rate is unchanged.
+    const _driftTime = time + _ad * (config.driftWarmupLoops || 0);
+    const dt = _driftTime * _ds, _dp = config._driftPhases || {};
     for (const key in config.driftCycles) {
       const { period, depth } = config.driftCycles[key];
       const sd = depth * (0.3 + config.bakedDriftScale * 1.4);
@@ -377,12 +380,10 @@ const Recorder = (() => {
 
     const setup = createRenderSetup(config, width, height);
 
-    const _warmup = (config.recordWarmupLoops || 0) * (config.audioDuration || 0);
-
     for (let i = 0; i < totalFrames; i++) {
       if (cancelRef.cancelled) break;
 
-      setFrameState(setup, config, frameData[i], (i / fps) + _warmup, i / totalFrames);
+      setFrameState(setup, config, frameData[i], i / fps, i / totalFrames);
       setup.renderer.render(setup.scene, setup.camera);
 
       const frame = new VideoFrame(setup.renderer.domElement, {
@@ -459,7 +460,7 @@ const Recorder = (() => {
       rotYMult:        S.rotYMult || 1,
       posDrift:        S.posDrift || null,
       breathe:         S.breathe || null,
-      recordWarmupLoops: S.recordWarmupLoops || 0,
+      driftWarmupLoops: S.driftWarmupLoops != null ? S.driftWarmupLoops : 5,
     };
   }
 
