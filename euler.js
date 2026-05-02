@@ -261,6 +261,7 @@ function applyAndLaunch() {
 
 playBtn.addEventListener('click', () => {
   if(!currentBuffer)return;
+  if (playState === "paused") { audioContext.resume(); playState = "playing"; return; }
   applyAndLaunch();
 
   if(playState==='paused'){
