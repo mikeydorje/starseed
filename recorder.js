@@ -1401,12 +1401,9 @@ const Recorder = (() => {
   function openFormatPicker() {
     if (!window.SCENE || !window.SCENE.currentBuffer) return;
     if (window.SCENE.playState === 'listening') return;
-    // Pause playback before opening the render overlay
-    const S = window.SCENE;
-    if (S.playState === 'playing' && S.audioContext) {
-      S.audioContext.suspend();
-      document.querySelector('canvas').click();
-    }
+    // Note: live playback is intentionally NOT paused. Render uses an offline
+    // analyser, and pausing/resuming the live audio context corrupts smoother
+    // state, leading to wildly different motion after the render closes.
     // Save active preview so we can restore it on close/cancel
     _savedPreviewFmt = activePreviewFmt;
     _savedBaseFov = _baseFov;
