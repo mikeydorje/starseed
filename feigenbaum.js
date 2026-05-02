@@ -333,8 +333,8 @@ function animate() {
   particles.position.y=Math.sin(dt * TP / (DRIFT_BASE*1.0) +1.7 + (_dp._py || 0))*driftAmt*0.7;
   const breathe=1.0+Math.sin(dt * TP / (DRIFT_BASE*1.8) + (_dp._br || 0))*0.05*(arc.rot||1);
   particles.scale.setScalar(breathe);
-  particles.rotation.y=elapsed*rotSpeedY*(arc.rot||1)*0.2;
-  particles.rotation.x=elapsed*rotSpeedX*0.3*(arc.rot||1)*0.2;
+  particles.rotation.y = _motionT *rotSpeedY*(arc.rot||1)*0.2;
+  particles.rotation.x = _motionT *rotSpeedX*0.3*(arc.rot||1)*0.2;
   renderer.render(scene,camera);
 }
 

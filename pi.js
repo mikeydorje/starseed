@@ -571,8 +571,8 @@ function animate() {
   const breathe = 1.0 + Math.sin(dt * TWO_PI / (DRIFT_BASE * 1.8) + (_dp._br || 0)) * 0.05 * (arcMult.rot || 1);
   particles.scale.setScalar(breathe);
 
-  particles.rotation.y = elapsed * rotSpeedY * (arcMult.rot || 1) * (1.0 + rotDrift) * 0.2;
-  particles.rotation.x = elapsed * rotSpeedX * 0.4 * (arcMult.rot || 1) * (1.0 + tiltDrift) * 0.2;
+  particles.rotation.y = _motionT * rotSpeedY * (arcMult.rot || 1) * (1.0 + rotDrift) * 0.2;
+  particles.rotation.x = _motionT * rotSpeedX * 0.4 * (arcMult.rot || 1) * (1.0 + tiltDrift) * 0.2;
 
   renderer.render(scene, camera);
 }

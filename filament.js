@@ -498,8 +498,8 @@ function animate() {
     }
   }
 
-  particles.rotation.y = elapsed * rotSpeedY * (arcMult.rot || 1) * (1.0 + rotDrift);
-  particles.rotation.x = elapsed * rotSpeedX * 0.3 * (arcMult.rot || 1) * (1.0 + tiltDrift);
+  particles.rotation.y = _motionT * rotSpeedY * (arcMult.rot || 1) * (1.0 + rotDrift);
+  particles.rotation.x = _motionT * rotSpeedX * 0.3 * (arcMult.rot || 1) * (1.0 + tiltDrift);
 
   renderer.render(scene, camera);
 }

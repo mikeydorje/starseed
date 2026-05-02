@@ -285,8 +285,8 @@ function animate() {
   uniforms.uGravityShift.value = gravBase * (0.25 + bakedFlux * 0.35) + bassNudge;
   const breathe = 1.0 + Math.sin(dt * TP / (DRIFT_BASE * 2.8) + (_dp._br || 0)) * 0.04 * (arc.rot || 1);
   particles.scale.setScalar(breathe);
-  particles.rotation.y = elapsed * rotSpeedY * (arc.rot || 1) * 0.1;
-  particles.rotation.x = elapsed * rotSpeedX * 0.2 * (arc.rot || 1) * 0.1;
+  particles.rotation.y = _motionT * rotSpeedY * (arc.rot || 1) * 0.1;
+  particles.rotation.x = _motionT * rotSpeedX * 0.2 * (arc.rot || 1) * 0.1;
   renderer.render(scene, camera);
 }
 

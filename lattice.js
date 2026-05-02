@@ -567,8 +567,8 @@ function animate() {
   const rotDrift = Math.sin(dt * TWO_PI / (DRIFT_BASE * 0.92) + (_dp._rd || 0)) * 0.05;
   const tiltDrift = Math.sin(dt * TWO_PI / (DRIFT_BASE * 1.38) + 2.0 + (_dp._td || 0)) * 0.03;
 
-  particles.rotation.y = elapsed * rotSpeedY * (arcMult.rot || 1) * (1.0 + rotDrift);
-  particles.rotation.x = elapsed * rotSpeedX * (arcMult.rot || 1) * (1.0 + tiltDrift);
+  particles.rotation.y = _motionT * rotSpeedY * (arcMult.rot || 1) * (1.0 + rotDrift);
+  particles.rotation.x = _motionT * rotSpeedX * (arcMult.rot || 1) * (1.0 + tiltDrift);
 
   renderer.render(scene, camera);
 }

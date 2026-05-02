@@ -274,8 +274,8 @@ function animate() {
   particles.scale.setScalar(breathe);
   const rd = Math.sin(dt * TP / (DRIFT_BASE * 0.92) + (_dp._rd || 0)) * 0.25;
   const td = Math.sin(dt * TP / (DRIFT_BASE * 1.38) + 2.0 + (_dp._td || 0)) * 0.17;
-  particles.rotation.y = elapsed * rotSpeedY * (arc.rot || 1) * (1.0 + rd) * 0.65;
-  particles.rotation.x = elapsed * rotSpeedX * 0.15 * (arc.rot || 1) * (1.0 + td) * 0.65;
+  particles.rotation.y = _motionT * rotSpeedY * (arc.rot || 1) * (1.0 + rd) * 0.65;
+  particles.rotation.x = _motionT * rotSpeedX * 0.15 * (arc.rot || 1) * (1.0 + td) * 0.65;
   renderer.render(scene, camera);
 }
 
