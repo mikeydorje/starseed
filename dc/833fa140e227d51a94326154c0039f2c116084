@@ -1,0 +1,14 @@
+recorder.js
+  h_b2f6efe2daa9cd 1404-1406
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "dc833fa140e227d51a94326154c0039f2c116084",
+  "prompts": {},
+  "humans": {
+    "h_b2f6efe2daa9cd": {
+      "author": "Mikey Dorje"
+    }
+  }
+}
