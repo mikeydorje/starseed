@@ -249,7 +249,7 @@ function applyAndLaunch() {
 
 playBtn.addEventListener('click', () => {
   if (!currentBuffer) return;
-  if (playState === "paused") { controlsEl.classList.add("hidden"); controlsEl.classList.remove("visible"); audioContext.resume(); playState = "playing"; return; }
+  if (playState === "paused") { _smoothedFreq.fill(0); _envelope = 0; controlsEl.classList.add("hidden"); controlsEl.classList.remove("visible"); audioContext.resume(); playState = "playing"; return; }
   applyAndLaunch();
 
   if (playState === 'paused') { audioContext.resume(); playState = 'playing'; return; }
