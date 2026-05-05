@@ -1,0 +1,24 @@
+custom-static.js
+  381b3881be6ae926 435-542,648-692,711-728,742,758-775,786-787,795,803-806,812-814,824-846,868-894,908-914,934-939
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "742ebc0c3f730e82fd9047ba800f6b2952ea6dc1",
+  "prompts": {
+    "381b3881be6ae926": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "04e9d54a-a0ec-49e3-a20a-29ce64688ea3",
+        "model": "unknown"
+      },
+      "human_author": "Mikey Dorje",
+      "messages": [],
+      "total_additions": 265,
+      "total_deletions": 1,
+      "accepted_lines": 264,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/ebace642d9554994a059d5b2ed9e3a9c7c37fcdb05c931aa38f4a644eaad423f"
+    }
+  }
+}
