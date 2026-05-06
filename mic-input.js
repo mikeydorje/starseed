@@ -47,15 +47,12 @@
     '#controls.visible~#rec-btn,#controls.visible~#rec-pause-btn,#controls.visible~#ctrl-panel,#controls.visible~#popout-transport-btn,#controls.visible~#close-popout-btn{display:none!important}',
     'body.pseudo-fs #rec-btn,body.pseudo-fs #rec-pause-btn,body.pseudo-fs #ctrl-panel,body.pseudo-fs #popout-transport-btn,body.pseudo-fs #close-popout-btn{display:none!important}',
     'body.pseudo-fs canvas{position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;transform:none!important;box-shadow:none!important}',
-    'body.toolbar-hidden #rec-btn,body.toolbar-hidden #rec-pause-btn,body.toolbar-hidden #fs-btn,body.toolbar-hidden #popout-transport-btn,body.toolbar-hidden #close-popout-btn{transform:translateY(60px);transition:transform 0.3s ease}',
-    'body.toolbar-hidden #ctrl-panel{transform:translateX(calc(100% + 32px));opacity:0;transition:transform 0.3s ease,opacity 0.3s ease}',
-    '#rec-btn,#rec-pause-btn,#fs-btn,#popout-transport-btn,#close-popout-btn{transition:transform 0.3s ease}',
-    '#ctrl-panel{transition:transform 0.3s ease,opacity 0.3s ease}',
     '#listen-pause{position:fixed;bottom:16px;right:' + listenRight + 'px;z-index:20;width:36px;height:36px;padding:0;display:none;align-items:center;justify-content:center;background:rgba(10,10,20,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:8px;cursor:pointer;color:rgba(255,255,255,0.4);font-size:16px;backdrop-filter:blur(6px);transition:all 0.3s}',
     '#listen-pause:hover{color:#fff;background:rgba(80,180,220,0.35);border-color:rgba(80,180,220,0.5)}',
-    'body.pseudo-fs #listen-pause,body.toolbar-hidden #listen-pause,#controls.visible~#listen-pause{display:none!important}',
-    'body.toolbar-hidden #back-btn{opacity:0;pointer-events:none;transition:opacity 0.3s ease}',
-    '#back-btn{transition:opacity 0.3s ease}'
+    'body.pseudo-fs #listen-pause,#controls.visible~#listen-pause{display:none!important}',
+    /* Chrome collapse: click canvas during playback to hide all chrome; click again to show. */
+    '#fs-btn,#back-btn,#ctrl-panel,#rec-btn,#rec-pause-btn,#popout-transport-btn,#close-popout-btn,#listen-pause{transition:opacity 0.3s ease}',
+    'body.chrome-collapsed #fs-btn,body.chrome-collapsed #back-btn,body.chrome-collapsed #ctrl-panel,body.chrome-collapsed #rec-btn,body.chrome-collapsed #rec-pause-btn,body.chrome-collapsed #popout-transport-btn,body.chrome-collapsed #close-popout-btn,body.chrome-collapsed #listen-pause{opacity:0!important;pointer-events:none!important}'
   ].join('\n');
   document.head.appendChild(style);
 
@@ -79,6 +76,54 @@
 
   listenPauseBtn.addEventListener('click', function() {
     stopListening();
+  });
+
+  // ── Chrome collapse + auto-hide ──
+  var AUTO_HIDE_DELAY = 7000;
+  var autoHideTimer = null;
+  // Selector for elements that should NOT trigger toggle when clicked.
+  var CHROME_SELECTOR = '#controls, #fs-btn, #back-btn, #ctrl-panel, #rec-btn, #rec-pause-btn, #popout-transport-btn, #close-popout-btn, #listen-pause, #info-box, #info-toggle';
+
+  function setChromeCollapsed(collapsed) {
+    var was = isChromeCollapsed();
+    document.body.classList.toggle('chrome-collapsed', !!collapsed);
+    if (collapsed) {
+      cancelAutoHide();
+    } else if (!was) {
+      // Was already visible — just bump the timer.
+      armAutoHide();
+    } else {
+      armAutoHide();
+    }
+  }
+  function isChromeCollapsed() {
+    return document.body.classList.contains('chrome-collapsed');
+  }
+  function armAutoHide() {
+    cancelAutoHide();
+    var st = S.playState;
+    if (st !== 'playing' && st !== 'listening') return;
+    if (controlsEl.classList.contains('visible')) return;
+    if (isChromeCollapsed()) return;
+    autoHideTimer = setTimeout(function() {
+      autoHideTimer = null;
+      // Re-check state; don't hide if user paused or chrome was already collapsed.
+      var s = S.playState;
+      if (s !== 'playing' && s !== 'listening') return;
+      if (controlsEl.classList.contains('visible')) return;
+      document.body.classList.add('chrome-collapsed');
+    }, AUTO_HIDE_DELAY);
+  }
+  function cancelAutoHide() {
+    if (autoHideTimer) { clearTimeout(autoHideTimer); autoHideTimer = null; }
+  }
+  // Any user activity over chrome resets the timer.
+  function bumpAutoHide() {
+    if (isChromeCollapsed()) return;
+    if (autoHideTimer) armAutoHide();
+  }
+  ['mousemove', 'pointerdown', 'keydown', 'wheel', 'touchstart', 'input'].forEach(function(evt) {
+    document.addEventListener(evt, bumpAutoHide, true);
   });
 
   async function startListening() {
@@ -157,80 +202,31 @@
       enterPseudoFS();
     }, true);
 
-    // ── Auto-hide transport system ──
-    var transportVisible = false;
-    var autoHideTimer = null;
-    var AUTO_HIDE_DELAY = 3000;
+    // Compatibility shims for recorder.js — the old auto-hide system is gone.
+    // Treat "transport visible" as "chrome not collapsed".
+    S._showTransport = function() { setChromeCollapsed(false); };
+    S._hideTransport = function() { setChromeCollapsed(true); };
+    S._holdTransport = function() { setChromeCollapsed(false); };
+    S._isTransportVisible = function() { return !isChromeCollapsed(); };
 
-    function showTransport(delay) {
-      var st = S.playState;
-      if (st !== 'playing' && st !== 'paused' && st !== 'listening') return;
-      if (controlsEl.classList.contains('visible')) return;
-      transportVisible = true;
-      document.body.classList.remove('toolbar-hidden');
-      if (autoHideTimer) clearTimeout(autoHideTimer);
-      autoHideTimer = setTimeout(hideTransport, delay || AUTO_HIDE_DELAY);
-    }
-
-    function hideTransport() {
-      if (autoHideTimer) { clearTimeout(autoHideTimer); autoHideTimer = null; }
-      transportVisible = false;
-      document.body.classList.add('toolbar-hidden');
-    }
-
-    // Expose for recorder.js to call
-    S._showTransport = showTransport;
-    S._hideTransport = hideTransport;
-    S._holdTransport = function() {
-      var st = S.playState;
-      if (st !== 'playing' && st !== 'paused' && st !== 'listening') return;
-      if (controlsEl.classList.contains('visible')) return;
-      transportVisible = true;
-      document.body.classList.remove('toolbar-hidden');
-      if (autoHideTimer) { clearTimeout(autoHideTimer); autoHideTimer = null; }
-    };
-    S._isTransportVisible = function() { return transportVisible; };
-
-    // Desktop: mouse movement shows transport, resets auto-hide timer
-    if (!isMobile) {
-      var mouseMoveThrottle = 0;
-      document.addEventListener('mousemove', function() {
-        var now = Date.now();
-        if (now - mouseMoveThrottle < 200) return;
-        mouseMoveThrottle = now;
-        var st = S.playState;
-        if (st === 'playing' || st === 'listening') showTransport();
-      });
-    }
-
-    // Desktop: hide chrome when entering native fullscreen, restore on exit
-    var inDesktopFS = false;
-
+    // Restore expanded chrome on FS exit so the user lands on full UI.
     document.addEventListener('fullscreenchange', function() {
       if (isMobile) return;
-      if (document.fullscreenElement) {
-        inDesktopFS = true;
-        hideTransport();
-      } else {
-        inDesktopFS = false;
+      if (!document.fullscreenElement) {
         fsBtnEl.style.display = '';
         if (backBtnEl) backBtnEl.style.display = '';
-        document.body.classList.remove('toolbar-hidden');
-        transportVisible = false;
-        if (autoHideTimer) { clearTimeout(autoHideTimer); autoHideTimer = null; }
+        setChromeCollapsed(false);
       }
     });
 
-    // When #controls overlay becomes visible (pause), stop auto-hide
+    // When #controls overlay becomes visible (pause), make sure chrome isn't collapsed
+    // so the pause UI is reachable.
     var controlsObserver = new MutationObserver(function() {
-      if (controlsEl.classList.contains('visible')) {
-        transportVisible = false;
-        if (autoHideTimer) { clearTimeout(autoHideTimer); autoHideTimer = null; }
-      }
+      if (controlsEl.classList.contains('visible')) setChromeCollapsed(false);
     });
     controlsObserver.observe(controlsEl, { attributes: true, attributeFilter: ['class'] });
 
-    // Spacebar handler (desktop)
+    // Spacebar handler (desktop): pause/resume directly.
     if (!isMobile) {
       document.addEventListener('keydown', function(e) {
         if (e.code !== 'Space') return;
@@ -239,14 +235,9 @@
         e.preventDefault();
         var st = S.playState;
         if (st === 'playing') {
-          if (!transportVisible) {
-            showTransport();
-          } else {
-            // Transport visible — trigger pause via canvas click path
-            S.renderer.domElement.click();
-          }
+          // Trigger pause via canvas click path (synthetic — bypasses chrome-toggle intercept)
+          S.renderer.domElement.click();
         } else if (st === 'paused') {
-          // Resume
           var pb = document.getElementById('play-btn');
           if (pb) pb.click();
         }
@@ -254,25 +245,36 @@
     }
   });
 
-  // Canvas click: capturing-phase intercept for auto-hide transport
-  // When transport is hidden during playback, show it instead of pausing
-  S.renderer.domElement.addEventListener('click', function(e) {
-    // Mobile pseudo-FS: exit on tap
-    if (pseudoFS) { exitPseudoFS(); return; }
-    // During playback or listening: intercept to show transport if hidden
-    if (S.playState === 'playing' || S.playState === 'listening') {
-      if (!S._isTransportVisible || !S._isTransportVisible()) {
-        // Transport hidden — show it, block the scene's pause/stop handler
-        if (S._showTransport) S._showTransport();
-        e.stopImmediatePropagation();
-        return;
+  // Document-level click intercept (capture phase).
+  // During playback/listening, real user clicks anywhere outside #controls / chrome elements
+  // toggle chrome visibility (canvas, page margins, letterbox bars, body, etc.).
+  // Pause is a separate button. Synthetic clicks (e.isTrusted=false) from togglePause()
+  // / spacebar pass through to the scene's pause handler.
+  document.addEventListener('click', function(e) {
+    // Mobile pseudo-FS: tap canvas to exit
+    if (pseudoFS && e.target === S.renderer.domElement) { exitPseudoFS(); return; }
+    if (!e.isTrusted) return;
+    var st = S.playState;
+    if (st !== 'playing' && st !== 'listening') return;
+    // Ignore clicks on any chrome element — buttons should do their own thing.
+    if (e.target.closest && e.target.closest(CHROME_SELECTOR)) return;
+    setChromeCollapsed(!isChromeCollapsed());
+    e.stopImmediatePropagation();
+  }, true);
+
+  // Arm the auto-hide whenever playback transitions into an active state.
+  var lastWatchedState = null;
+  setInterval(function() {
+    var st = S.playState;
+    if (st !== lastWatchedState) {
+      lastWatchedState = st;
+      if (st === 'playing' || st === 'listening') {
+        if (!isChromeCollapsed()) armAutoHide();
+      } else {
+        cancelAutoHide();
       }
-      // Transport visible — let through
-      // In listen mode: stop listening
-      if (S.playState === 'listening') { stopListening(); return; }
-      // In playing mode: scene handler will pause
     }
-  }, true); // capturing phase — fires before scene's bubble-phase handler
+  }, 250);
 
   // Expose stop function for scene integration
   S._stopMic = stopListening;

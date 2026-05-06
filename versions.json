@@ -1,5 +1,16 @@
 [
   {
+    "version": "v1.2.4",
+    "date": "May 2026",
+    "tag": "",
+    "summary": "Control improvements and drift improvements.",
+    "details": [
+      "Click anywhere outside the controls to hide/show chrome during playback. Auto-hides after 7s of inactivity. Pause is the pause button — clicking the canvas no longer pauses.",
+      "Drift refinements."
+    ],
+    "major": false
+  },
+  {
     "version": "v1.2.3",
     "date": "April 2026",
     "tag": "",
