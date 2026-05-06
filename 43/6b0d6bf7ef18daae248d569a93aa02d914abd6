@@ -1,0 +1,31 @@
+mic-input.js
+  h_b2f6efe2daa9cd 52-55,81-128,205-210,212,215,218,222-223,225,229,238-239,248-274,277
+versions.json
+  fed277d82ed9f3ee 3-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "436b0d6bf7ef18daae248d569a93aa02d914abd6",
+  "prompts": {
+    "fed277d82ed9f3ee": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6f21b941-ab0f-4d70-9518-6826f1e99eff",
+        "model": "unknown"
+      },
+      "human_author": "Mikey Dorje",
+      "messages": [],
+      "total_additions": 11,
+      "total_deletions": 291,
+      "accepted_lines": 11,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/71ac4372f4c4013f84fca7384013b998474f12828036ebeaa815d849f2607377"
+    }
+  },
+  "humans": {
+    "h_b2f6efe2daa9cd": {
+      "author": "Mikey Dorje"
+    }
+  }
+}
